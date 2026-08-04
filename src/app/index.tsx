@@ -15,12 +15,9 @@ import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 
 export default function HomeScreen() {
-  const { state, isLoading, startFresh } = useMoving();
+  const { state, isLoading, lookups, startFresh } = useMoving();
   const [roomManagerVisible, setRoomManagerVisible] = useState(false);
-  const sourceRooms = useMemo(
-    () => state.rooms.filter((room) => room.kind === 'source').sort((a, b) => a.order - b.order),
-    [state.rooms],
-  );
+  const sourceRooms = lookups.sourceRooms;
 
   const summary = useMemo(() => {
     const movingItems = state.items.filter((item) => item.action === '带走');
@@ -129,9 +126,10 @@ export default function HomeScreen() {
         <View style={styles.roomGrid}>
           {sourceRooms.map((room) => {
             const boxes = state.boxes.filter((box) => box.sourceRoomId === room.id);
-            const itemCount = state.items.filter((item) =>
-              boxes.some((box) => box.id === item.boxId),
-            ).length;
+            const itemCount = boxes.reduce(
+              (sum, box) => sum + (lookups.itemsByBox.get(box.id)?.length ?? 0),
+              0,
+            );
 
             return (
               <Card key={room.id} style={styles.roomCard}>
@@ -150,11 +148,9 @@ export default function HomeScreen() {
         <SectionTitle title="最近的箱子" detail="继续上次进度" />
         <View style={styles.listGap}>
           {state.boxes.slice(0, 3).map((box) => {
-            const sourceRoom = state.rooms.find((entry) => entry.id === box.sourceRoomId);
-            const destinationRoom = state.rooms.find(
-              (entry) => entry.id === box.destinationRoomId,
-            );
-            const itemCount = state.items.filter((item) => item.boxId === box.id).length;
+            const sourceRoom = lookups.roomById.get(box.sourceRoomId);
+            const destinationRoom = lookups.roomById.get(box.destinationRoomId);
+            const itemCount = lookups.itemsByBox.get(box.id)?.length ?? 0;
             const done = box.status === '已到达' || box.status === '已拆箱';
             return (
               <Card key={box.id} style={styles.boxRow}>

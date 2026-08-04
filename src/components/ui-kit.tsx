@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -34,6 +35,15 @@ export function Screen({
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       {content}
     </SafeAreaView>
+  );
+}
+
+export function LoadingScreen({ label = '正在清点你的家…' }: { label?: string }) {
+  return (
+    <View style={styles.loading}>
+      <ActivityIndicator color={AppColors.primary} size="large" />
+      <Text style={styles.loadingText}>{label}</Text>
+    </View>
   );
 }
 
@@ -258,6 +268,17 @@ const styles = StyleSheet.create({
     paddingTop: AppSpacing.md,
     paddingBottom: 120,
     gap: AppSpacing.xl,
+  },
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: AppSpacing.md,
+    backgroundColor: AppColors.background,
+  },
+  loadingText: {
+    color: AppColors.textMuted,
+    fontSize: 15,
   },
   header: {
     flexDirection: 'row',

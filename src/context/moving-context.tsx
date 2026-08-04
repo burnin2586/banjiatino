@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { initialMovingState } from '@/data/initial-data';
+import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
 import type {
   BoxStatus,
   ItemAction,
@@ -46,9 +47,18 @@ type ItemInput = {
   note?: string;
 };
 
+export type Lookups = {
+  roomById: Map<string, Room>;
+  boxById: Map<string, MovingBox>;
+  itemsByBox: Map<string, MovingItem[]>;
+  sourceRooms: Room[];
+  destinationRooms: Room[];
+};
+
 type MovingContextValue = {
   state: MovingState;
   isLoading: boolean;
+  lookups: Lookups;
   addRoom: (input: RoomInput) => void;
   updateRoom: (roomId: string, input: Pick<RoomInput, 'name' | 'color'>) => void;
   deleteRoom: (roomId: string) => boolean;
@@ -64,117 +74,10 @@ type MovingContextValue = {
   startFresh: () => void;
 };
 
-type StoredRoom = Partial<Room> & { id?: string; name?: string; color?: string };
-type StoredBox = Partial<MovingBox> & { roomId?: string };
-type StoredItem = Partial<MovingItem>;
-type StoredState = {
-  schemaVersion?: number;
-  rooms?: StoredRoom[];
-  boxes?: StoredBox[];
-  items?: StoredItem[];
-};
-
 const MovingContext = createContext<MovingContextValue | null>(null);
 
 function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function itemStatusForBox(status: BoxStatus): ItemStatus {
-  if (status === '已拆箱') return '已安置';
-  if (status === '已到达') return '已到达';
-  if (status === '已装箱' || status === '已搬走') return '已装箱';
-  return '待整理';
-}
-
-function migrateStoredState(value: unknown): MovingState {
-  if (!value || typeof value !== 'object') {
-    return initialMovingState;
-  }
-
-  const stored = value as StoredState;
-  const storedRooms = Array.isArray(stored.rooms) ? stored.rooms : [];
-  const sourceRooms: Room[] = storedRooms
-    .filter((room) => room.id && room.name && room.kind !== 'destination')
-    .map((room, index) => ({
-      id: room.id!,
-      name: room.name!.trim(),
-      color: room.color || '#BFDCCB',
-      kind: 'source',
-      order: typeof room.order === 'number' ? room.order : index,
-    }));
-
-  if (sourceRooms.length === 0) {
-    sourceRooms.push(
-      ...initialMovingState.rooms.filter((room) => room.kind === 'source'),
-    );
-  }
-
-  const storedDestinationRooms: Room[] = storedRooms
-    .filter((room) => room.id && room.name && room.kind === 'destination')
-    .map((room, index) => ({
-      id: room.id!,
-      name: room.name!.trim(),
-      color: room.color || '#BCD7E8',
-      kind: 'destination',
-      order: typeof room.order === 'number' ? room.order : index,
-    }));
-
-  const destinationRooms =
-    storedDestinationRooms.length > 0
-      ? storedDestinationRooms
-      : sourceRooms.map((room, index) => ({
-          id: `dest-${room.id.replace(/^room-/, '')}`,
-          name: room.name,
-          color: room.color,
-          kind: 'destination' as const,
-          order: index,
-        }));
-
-  const sourceFallback = sourceRooms[0].id;
-  const destinationFallback = destinationRooms[0].id;
-  const now = Date.now();
-  const rooms = [...sourceRooms, ...destinationRooms];
-
-  const boxes: MovingBox[] = (Array.isArray(stored.boxes) ? stored.boxes : [])
-    .filter((box) => box.id && box.code && box.name)
-    .map((box) => {
-      const sourceRoomId = box.sourceRoomId || box.roomId || sourceFallback;
-      const sourceRoom = sourceRooms.find((room) => room.id === sourceRoomId);
-      const matchingDestination = destinationRooms.find(
-        (room) => room.name === sourceRoom?.name,
-      );
-      return {
-        id: box.id!,
-        code: box.code!,
-        name: box.name!.trim(),
-        sourceRoomId,
-        destinationRoomId:
-          box.destinationRoomId || matchingDestination?.id || destinationFallback,
-        status: box.status || '待整理',
-        note: box.note || '',
-        createdAt: box.createdAt || now,
-        updatedAt: box.updatedAt || box.createdAt || now,
-      };
-    });
-
-  const items: MovingItem[] = (Array.isArray(stored.items) ? stored.items : [])
-    .filter((item) => item.id && item.name)
-    .map((item) => ({
-      id: item.id!,
-      name: item.name!.trim(),
-      quantity: Math.max(1, item.quantity || 1),
-      originalLocation: item.originalLocation || '',
-      destinationLocation: item.destinationLocation || '',
-      boxId: item.boxId && boxes.some((box) => box.id === item.boxId) ? item.boxId : null,
-      action: item.action || '带走',
-      status: item.status || '待整理',
-      note: item.note || '',
-      createdAt: item.createdAt || now,
-      updatedAt: item.updatedAt || item.createdAt || now,
-    }));
-
-  return { schemaVersion: 2, rooms, boxes, items };
 }
 
 export function MovingProvider({ children }: PropsWithChildren) {
@@ -270,18 +173,13 @@ export function MovingProvider({ children }: PropsWithChildren) {
   const addBox = useCallback(
     (input: BoxInput) => {
       updateState((previous) => {
-        const nextNumber =
-          previous.boxes.reduce((largest, box) => {
-            const parsed = Number(box.code.replace(/\D/g, ''));
-            return Number.isFinite(parsed) ? Math.max(largest, parsed) : largest;
-          }, 0) + 1;
         const now = Date.now();
         return {
           ...previous,
           boxes: [
             {
               id: createId('box'),
-              code: `BOX-${String(nextNumber).padStart(3, '0')}`,
+              code: nextBoxCode(previous.boxes),
               name: input.name.trim(),
               sourceRoomId: input.sourceRoomId,
               destinationRoomId: input.destinationRoomId,
@@ -445,10 +343,44 @@ export function MovingProvider({ children }: PropsWithChildren) {
     }));
   }, [updateState]);
 
+  const lookups = useMemo<Lookups>(() => {
+    const roomById = new Map<string, Room>();
+    const boxById = new Map<string, MovingBox>();
+    const itemsByBox = new Map<string, MovingItem[]>();
+
+    for (const room of state.rooms) {
+      roomById.set(room.id, room);
+    }
+    for (const box of state.boxes) {
+      boxById.set(box.id, box);
+    }
+    for (const item of state.items) {
+      if (!item.boxId) continue;
+      const list = itemsByBox.get(item.boxId);
+      if (list) {
+        list.push(item);
+      } else {
+        itemsByBox.set(item.boxId, [item]);
+      }
+    }
+
+    const sortByOrder = (a: Room, b: Room) => a.order - b.order;
+    return {
+      roomById,
+      boxById,
+      itemsByBox,
+      sourceRooms: state.rooms.filter((room) => room.kind === 'source').sort(sortByOrder),
+      destinationRooms: state.rooms
+        .filter((room) => room.kind === 'destination')
+        .sort(sortByOrder),
+    };
+  }, [state.rooms, state.boxes, state.items]);
+
   const value = useMemo(
     () => ({
       state,
       isLoading,
+      lookups,
       addRoom,
       updateRoom,
       deleteRoom,
@@ -466,6 +398,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
     [
       state,
       isLoading,
+      lookups,
       addRoom,
       updateRoom,
       deleteRoom,

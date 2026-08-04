@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
   AddButton,
   Card,
   ChoiceChip,
   EmptyState,
+  LoadingScreen,
   ModalSheet,
   PageHeader,
   PrimaryButton,
-  Screen,
   SectionTitle,
   StatusBadge,
   TextButton,
@@ -24,7 +25,15 @@ import {
 } from '@/types/moving';
 
 export default function ItemsScreen() {
-  const { state, addItem, updateItem, deleteItem, setItemStatus } = useMoving();
+  const {
+    state,
+    isLoading,
+    lookups,
+    addItem,
+    updateItem,
+    deleteItem,
+    setItemStatus,
+  } = useMoving();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -106,108 +115,118 @@ export default function ItemsScreen() {
 
   return (
     <>
-      <Screen>
-        <PageHeader
-          eyebrow="物品台账"
-          title="每一件，都有去向"
-          description="记录旧家位置和新家位置，填错了也可以随时修改。"
-          action={<AddButton label="新增物品" onPress={openNewItem} />}
-        />
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.screenSafe}>
+        {isLoading ? (
+          <LoadingScreen />
+        ) : (
+          <FlatList
+            data={sortedItems}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.screenContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <View style={styles.headerBlock}>
+                <PageHeader
+                  eyebrow="物品台账"
+                  title="每一件，都有去向"
+                  description="记录旧家位置和新家位置，填错了也可以随时修改。"
+                  action={<AddButton label="新增物品" onPress={openNewItem} />}
+                />
+                <SectionTitle title="全部物品" detail={`${state.items.length} 类`} />
+              </View>
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon="◇"
+                title="还没有物品"
+                description="从一个抽屉开始，添加第一件需要搬走的东西。"
+              />
+            }
+            ItemSeparatorComponent={() => <View style={styles.listGap} />}
+            renderItem={({ item }) => {
+              const box = item.boxId ? lookups.boxById.get(item.boxId) : undefined;
+              const destinationRoom = box
+                ? lookups.roomById.get(box.destinationRoomId)
+                : undefined;
+              const isMoving = item.action === '带走';
+              const isFinal = item.status === '已安置';
 
-        <View>
-          <SectionTitle title="全部物品" detail={`${state.items.length} 类`} />
-          {sortedItems.length === 0 ? (
-            <EmptyState
-              icon="◇"
-              title="还没有物品"
-              description="从一个抽屉开始，添加第一件需要搬走的东西。"
-            />
-          ) : (
-            <View style={styles.list}>
-              {sortedItems.map((item) => {
-                const box = state.boxes.find((entry) => entry.id === item.boxId);
-                const destinationRoom = state.rooms.find(
-                  (room) => room.id === box?.destinationRoomId,
-                );
-                const isMoving = item.action === '带走';
-                const isFinal = item.status === '已安置';
-
-                return (
-                  <Card key={item.id}>
-                    <View style={styles.itemTop}>
-                      <View style={styles.itemIdentity}>
-                        <View style={styles.itemIcon}>
-                          <Text style={styles.itemIconText}>◇</Text>
-                        </View>
-                        <View style={styles.itemTitleWrap}>
-                          <Text style={styles.itemName}>
-                            {item.name}
-                            {item.quantity > 1 ? ` × ${item.quantity}` : ''}
-                          </Text>
-                          <Text style={styles.itemLocation}>
-                            原位置：{item.originalLocation || '未记录'}
-                          </Text>
-                        </View>
+              return (
+                <Card>
+                  <View style={styles.itemTop}>
+                    <View style={styles.itemIdentity}>
+                      <View style={styles.itemIcon}>
+                        <Text style={styles.itemIconText}>◇</Text>
                       </View>
-                      <StatusBadge
-                        label={isMoving ? item.status : item.action}
-                        tone={
-                          isFinal
-                            ? 'success'
-                            : !isMoving
-                              ? 'accent'
-                              : item.status === '待整理'
-                                ? 'warning'
-                                : 'neutral'
-                        }
-                      />
-                    </View>
-
-                    <View style={styles.destination}>
-                      <Text style={styles.destinationLabel}>搬家去向</Text>
-                      <Text style={styles.destinationValue}>
-                        {!isMoving
-                          ? item.action
-                          : box
-                            ? `${box.code} · ${destinationRoom?.name ?? '未设置目标房间'}`
-                            : '尚未分配箱子'}
-                      </Text>
-                      {isMoving ? (
-                        <Text style={styles.destinationMeta}>
-                          具体位置：{item.destinationLocation || '待确定'}
+                      <View style={styles.itemTitleWrap}>
+                        <Text style={styles.itemName}>
+                          {item.name}
+                          {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                         </Text>
-                      ) : null}
-                    </View>
-
-                    {item.note ? <Text style={styles.note}>备注：{item.note}</Text> : null}
-
-                    {isMoving && item.boxId ? (
-                      <View style={styles.statusArea}>
-                        <Text style={styles.statusLabel}>调整状态</Text>
-                        <View style={styles.chipWrap}>
-                          {ITEM_STATUSES.map((status) => (
-                            <ChoiceChip
-                              key={status}
-                              label={status}
-                              selected={item.status === status}
-                              onPress={() => setItemStatus(item.id, status)}
-                            />
-                          ))}
-                        </View>
+                        <Text style={styles.itemLocation}>
+                          原位置：{item.originalLocation || '未记录'}
+                        </Text>
                       </View>
-                    ) : null}
-
-                    <View style={styles.actionRow}>
-                      <TextButton label="编辑" onPress={() => openEditItem(item)} />
-                      <TextButton label="删除" tone="danger" onPress={() => confirmDelete(item)} />
                     </View>
-                  </Card>
-                );
-              })}
-            </View>
-          )}
-        </View>
-      </Screen>
+                    <StatusBadge
+                      label={isMoving ? item.status : item.action}
+                      tone={
+                        isFinal
+                          ? 'success'
+                          : !isMoving
+                            ? 'accent'
+                            : item.status === '待整理'
+                              ? 'warning'
+                              : 'neutral'
+                      }
+                    />
+                  </View>
+
+                  <View style={styles.destination}>
+                    <Text style={styles.destinationLabel}>搬家去向</Text>
+                    <Text style={styles.destinationValue}>
+                      {!isMoving
+                        ? item.action
+                        : box
+                          ? `${box.code} · ${destinationRoom?.name ?? '未设置目标房间'}`
+                          : '尚未分配箱子'}
+                    </Text>
+                    {isMoving ? (
+                      <Text style={styles.destinationMeta}>
+                        具体位置：{item.destinationLocation || '待确定'}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  {item.note ? <Text style={styles.note}>备注：{item.note}</Text> : null}
+
+                  {isMoving && item.boxId ? (
+                    <View style={styles.statusArea}>
+                      <Text style={styles.statusLabel}>调整状态</Text>
+                      <View style={styles.chipWrap}>
+                        {ITEM_STATUSES.map((status) => (
+                          <ChoiceChip
+                            key={status}
+                            label={status}
+                            selected={item.status === status}
+                            onPress={() => setItemStatus(item.id, status)}
+                          />
+                        ))}
+                      </View>
+                    </View>
+                  ) : null}
+
+                  <View style={styles.actionRow}>
+                    <TextButton label="编辑" onPress={() => openEditItem(item)} />
+                    <TextButton label="删除" tone="danger" onPress={() => confirmDelete(item)} />
+                  </View>
+                </Card>
+              );
+            }}
+          />
+        )}
+      </SafeAreaView>
 
       <ModalSheet
         visible={modalVisible}
@@ -323,7 +342,22 @@ function FormField({
 }
 
 const styles = StyleSheet.create({
-  list: { gap: AppSpacing.md },
+  screenSafe: {
+    flex: 1,
+    backgroundColor: AppColors.background,
+  },
+  screenContent: {
+    paddingHorizontal: AppSpacing.lg,
+    paddingTop: AppSpacing.md,
+    paddingBottom: 120,
+  },
+  headerBlock: {
+    gap: AppSpacing.xl,
+    marginBottom: AppSpacing.md,
+  },
+  listGap: {
+    height: AppSpacing.md,
+  },
   itemTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',

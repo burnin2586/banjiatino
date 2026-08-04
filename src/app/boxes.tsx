@@ -6,6 +6,7 @@ import {
   Card,
   ChoiceChip,
   EmptyState,
+  LoadingScreen,
   ModalSheet,
   PageHeader,
   PrimaryButton,
@@ -19,18 +20,9 @@ import { useMoving } from '@/context/moving-context';
 import { BOX_STATUSES, type MovingBox } from '@/types/moving';
 
 export default function BoxesScreen() {
-  const { state, addBox, updateBox, deleteBox, setBoxStatus } = useMoving();
-  const sourceRooms = useMemo(
-    () => state.rooms.filter((room) => room.kind === 'source').sort((a, b) => a.order - b.order),
-    [state.rooms],
-  );
-  const destinationRooms = useMemo(
-    () =>
-      state.rooms
-        .filter((room) => room.kind === 'destination')
-        .sort((a, b) => a.order - b.order),
-    [state.rooms],
-  );
+  const { state, isLoading, lookups, addBox, updateBox, deleteBox, setBoxStatus } = useMoving();
+  const sourceRooms = lookups.sourceRooms;
+  const destinationRooms = lookups.destinationRooms;
   const [modalVisible, setModalVisible] = useState(false);
   const [editingBoxId, setEditingBoxId] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -92,7 +84,7 @@ export default function BoxesScreen() {
   }
 
   function confirmDelete(box: MovingBox) {
-    const contents = state.items.filter((item) => item.boxId === box.id);
+    const contents = lookups.itemsByBox.get(box.id) ?? [];
     const detail =
       contents.length > 0
         ? `箱内 ${contents.length} 类物品会保留，但将变为“未分配箱子”。`
@@ -101,6 +93,10 @@ export default function BoxesScreen() {
       { text: '取消', style: 'cancel' },
       { text: '确认删除', style: 'destructive', onPress: () => deleteBox(box.id) },
     ]);
+  }
+
+  if (isLoading) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -124,11 +120,9 @@ export default function BoxesScreen() {
           ) : (
             <View style={styles.list}>
               {sortedBoxes.map((box) => {
-                const sourceRoom = state.rooms.find((room) => room.id === box.sourceRoomId);
-                const destinationRoom = state.rooms.find(
-                  (room) => room.id === box.destinationRoomId,
-                );
-                const contents = state.items.filter((item) => item.boxId === box.id);
+                const sourceRoom = lookups.roomById.get(box.sourceRoomId);
+                const destinationRoom = lookups.roomById.get(box.destinationRoomId);
+                const contents = lookups.itemsByBox.get(box.id) ?? [];
                 const totalQuantity = contents.reduce((sum, item) => sum + item.quantity, 0);
                 const isFinal = box.status === '已拆箱';
 

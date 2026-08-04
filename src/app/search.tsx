@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   Card,
   EmptyState,
+  LoadingScreen,
   PageHeader,
   Screen,
   SectionTitle,
@@ -13,7 +14,7 @@ import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 
 export default function SearchScreen() {
-  const { state } = useMoving();
+  const { state, isLoading, lookups } = useMoving();
   const [query, setQuery] = useState('');
 
   const movingItems = useMemo(
@@ -32,9 +33,9 @@ export default function SearchScreen() {
     }
 
     return state.items.filter((item) => {
-      const box = state.boxes.find((entry) => entry.id === item.boxId);
-      const sourceRoom = state.rooms.find((room) => room.id === box?.sourceRoomId);
-      const destinationRoom = state.rooms.find((room) => room.id === box?.destinationRoomId);
+      const box = item.boxId ? lookups.boxById.get(item.boxId) : undefined;
+      const sourceRoom = box ? lookups.roomById.get(box.sourceRoomId) : undefined;
+      const destinationRoom = box ? lookups.roomById.get(box.destinationRoomId) : undefined;
       return [
         item.name,
         item.originalLocation,
@@ -48,7 +49,11 @@ export default function SearchScreen() {
         .filter(Boolean)
         .some((value) => value?.toLocaleLowerCase('zh-CN').includes(keyword));
     });
-  }, [query, state.boxes, state.items, state.rooms]);
+  }, [query, state.items, lookups]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Screen>
@@ -106,11 +111,11 @@ export default function SearchScreen() {
         ) : (
           <View style={styles.results}>
             {results.map((item) => {
-              const box = state.boxes.find((entry) => entry.id === item.boxId);
-              const sourceRoom = state.rooms.find((entry) => entry.id === box?.sourceRoomId);
-              const destinationRoom = state.rooms.find(
-                (entry) => entry.id === box?.destinationRoomId,
-              );
+              const box = item.boxId ? lookups.boxById.get(item.boxId) : undefined;
+              const sourceRoom = box ? lookups.roomById.get(box.sourceRoomId) : undefined;
+              const destinationRoom = box
+                ? lookups.roomById.get(box.destinationRoomId)
+                : undefined;
               const isMoving = item.action === '带走';
               return (
                 <Card key={item.id}>
