@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "banjiatino",
+    "name": "搬家条理",
     "slug": "banjiatino",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -28,11 +28,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#2F6B4F",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

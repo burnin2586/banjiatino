@@ -1,4 +1,38 @@
-# Welcome to your Expo app 👋
+# 搬家条理
+
+一个在 Expo Go 中运行的本地优先搬家整理 App。它用“房间 → 箱子 → 物品 → 到达清点”的方式，帮助用户在搬家过程中追踪重要物品的去向。项目固定使用 Expo SDK 54，以兼容苹果 App Store 当前提供的 Expo Go。
+
+## 当前功能
+
+- 搬家整体进度与待办提醒
+- 自定义旧家和新家的房间
+- 创建连续编号的箱子并设置来源、目标房间
+- 添加物品、数量、原位置、新家位置、处理方式、所属箱子和备注
+- 编辑和删除箱子、物品，并将状态调整到任意阶段
+- 删除非空箱子时保留物品并自动恢复为未分配状态
+- 按物品名称、原位置、新家位置、房间、箱号和备注搜索
+- 自动把 V1 本地数据迁移到 V2 数据结构
+- 使用 SQLite 将数据保存在设备本地
+
+## 项目结构
+
+- `src/app/`：四个主要页面和底部导航
+- `src/context/`：搬家状态与本地持久化
+- `src/components/`：共用界面组件
+- `src/data/`：首次启动时使用的示例数据
+- `src/types/`：房间、箱子和物品的数据类型
+
+## 本地启动
+
+1. 安装依赖：`npm install`
+2. 启动 Expo：`npx expo start`
+3. 使用同一网络下的 iPhone 打开 Expo Go 并扫描二维码
+
+本项目当前定位为个人原型，不需要 Apple Developer Program。
+
+---
+
+## Expo starter reference
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
