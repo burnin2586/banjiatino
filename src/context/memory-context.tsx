@@ -191,6 +191,9 @@ export function MemoryProvider({ children }: PropsWithChildren) {
 
   const removeWall = useCallback(
     (roomId: string, wallId: string) => {
+      const wallPhotos =
+        state.rooms.find((r) => r.id === roomId)?.photos.filter((p) => p.wallId === wallId) ?? [];
+      void Promise.all(wallPhotos.map((p) => deletePhotoFile(p.imageUri)));
       update((prev) => ({
         ...prev,
         rooms: prev.rooms.map((r) =>
@@ -205,7 +208,7 @@ export function MemoryProvider({ children }: PropsWithChildren) {
         ),
       }));
     },
-    [update],
+    [state.rooms, update],
   );
 
   const addPhoto = useCallback(
