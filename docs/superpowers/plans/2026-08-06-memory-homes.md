@@ -840,7 +840,7 @@ export function FloorplanCanvas({
         <ModeChip label="编辑" active={mode === 'edit'} onPress={() => setMode('edit')} />
         <ModeChip label="查看" active={mode === 'view'} onPress={() => setMode('view')} />
         <Text style={styles.hint}>
-          {mode === 'edit' ? '点两点画墙 · 长按墙删除 · 点墙可贴照片' : '双指缩放、单指拖动浏览'}
+          {mode === 'edit' ? '点两点画墙 · 长按墙删除 · 点墙可贴照片' : '只读浏览模式（切回编辑以修改）'}
         </Text>
       </View>
 

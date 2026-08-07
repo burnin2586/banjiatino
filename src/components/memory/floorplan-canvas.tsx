@@ -1,10 +1,5 @@
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from 'react-native-gesture-handler';
 import Svg, { Circle, Defs, G, Image as SvgImage, Line, Pattern, Rect } from 'react-native-svg';
 
 import { AppColors, AppSpacing } from '@/constants/app-theme';
@@ -21,7 +16,7 @@ type Props = {
   onWallRemove: (wallId: string) => void;
 };
 
-const CANVAS = 320; // 画布逻辑尺寸（用于命中），实际铺满父容器
+const CANVAS = 320;
 
 export function FloorplanCanvas({
   room,
@@ -33,13 +28,13 @@ export function FloorplanCanvas({
   const [mode, setMode] = useState<Mode>('edit');
   const [pendingStart, setPendingStart] = useState<{ x: number; y: number } | null>(null);
 
-  function toGrid(sx: number, sy: number) {
-    return snapPoint(sx, sy);
+  function pointFromEvent(e: { nativeEvent: { locationX: number; locationY: number } }) {
+    return snapPoint(e.nativeEvent.locationX, e.nativeEvent.locationY);
   }
 
-  const tap = Gesture.Tap().onEnd((e) => {
+  function handlePress(e: { nativeEvent: { locationX: number; locationY: number } }) {
     if (mode !== 'edit') return;
-    const p = toGrid(e.x, e.y);
+    const p = pointFromEvent(e);
     if (!pendingStart) {
       setPendingStart(p);
       return;
@@ -56,11 +51,11 @@ export function FloorplanCanvas({
       y2: p.y,
     });
     setPendingStart(null);
-  });
+  }
 
-  const longPress = Gesture.LongPress().onEnd((e) => {
+  function handleLongPress(e: { nativeEvent: { locationX: number; locationY: number } }) {
     if (mode !== 'edit') return;
-    const p = toGrid(e.x, e.y);
+    const p = pointFromEvent(e);
     const hit = room.walls.find((w) => nearWall(w, p));
     if (hit) {
       Alert.alert('删除这段墙？', '墙上的照片也会一起删除。', [
@@ -68,7 +63,7 @@ export function FloorplanCanvas({
         { text: '删除', style: 'destructive', onPress: () => onWallRemove(hit.id) },
       ]);
     }
-  });
+  }
 
   return (
     <View style={styles.wrap}>
@@ -76,70 +71,84 @@ export function FloorplanCanvas({
         <ModeChip label="编辑" active={mode === 'edit'} onPress={() => setMode('edit')} />
         <ModeChip label="查看" active={mode === 'view'} onPress={() => setMode('view')} />
         <Text style={styles.hint}>
-          {mode === 'edit' ? '点两点画墙 · 长按墙删除 · 点墙可贴照片' : '只读浏览模式（切回编辑以修改）'}
+          {mode === 'edit' ? '点两点画墙 · 长按墙删除' : '只读浏览模式（切回编辑以修改）'}
         </Text>
       </View>
 
-      <GestureHandlerRootView>
-        <GestureDetector gesture={Gesture.Exclusive(longPress, tap)}>
-          <View style={styles.canvas}>
-            <Svg width="100%" height="100%" viewBox={`0 0 ${CANVAS} ${CANVAS}`}>
-              <Defs>
-                <Pattern id="grid" width={GRID_SIZE} height={GRID_SIZE} patternUnits="userSpaceOnUse">
-                  <Circle cx={1} cy={1} r={1} fill={AppColors.border} />
-                </Pattern>
-              </Defs>
-              <Rect x={0} y={0} width={CANVAS} height={CANVAS} fill="url(#grid)" />
+      <View style={styles.canvasOuter}>
+        <Pressable onPress={handlePress} onLongPress={handleLongPress} style={styles.canvas}>
+          <Svg width={CANVAS} height={CANVAS} viewBox={`0 0 ${CANVAS} ${CANVAS}`}>
+            <Defs>
+              <Pattern id="mem-grid" width={GRID_SIZE} height={GRID_SIZE} patternUnits="userSpaceOnUse">
+                <Circle cx={1} cy={1} r={1} fill={AppColors.border} />
+              </Pattern>
+            </Defs>
+            <Rect x={0} y={0} width={CANVAS} height={CANVAS} fill="url(#mem-grid)" />
 
-              {pendingStart ? (
-                <Circle
-                  cx={pendingStart.x * GRID_SIZE}
-                  cy={pendingStart.y * GRID_SIZE}
-                  r={6}
-                  fill={AppColors.accent}
-                />
-              ) : null}
-
-              {room.walls.map((w) => (
-                <G key={w.id}>
-                  <Line
-                    x1={w.x1 * GRID_SIZE}
-                    y1={w.y1 * GRID_SIZE}
-                    x2={w.x2 * GRID_SIZE}
-                    y2={w.y2 * GRID_SIZE}
-                    stroke={AppColors.text}
-                    strokeWidth={5}
-                    strokeLinecap="round"
-                  />
-                  <Circle cx={w.x1 * GRID_SIZE} cy={w.y1 * GRID_SIZE} r={4} fill={AppColors.text} />
-                  <Circle cx={w.x2 * GRID_SIZE} cy={w.y2 * GRID_SIZE} r={4} fill={AppColors.text} />
-                </G>
-              ))}
-
-              {room.photos.map((photo) => {
-                const wall = room.walls.find((w) => w.id === photo.wallId);
-                if (!wall) return null;
-                const p = pointOnWall(wall, photo.t);
-                const cx = p.x * GRID_SIZE;
-                const cy = p.y * GRID_SIZE;
-                return (
-                  <G key={photo.id} onPress={() => onPhotoPress(photo)}>
-                    <Rect x={cx - 14} y={cy - 14} width={28} height={28} rx={4} fill={AppColors.surface} stroke={AppColors.primary} strokeWidth={2} />
-                    <SvgImage x={cx - 12} y={cy - 12} width={24} height={24} href={photo.imageUri} preserveAspectRatio="xMidYMid slice" />
-                  </G>
-                );
-              })}
-            </Svg>
-
-            {room.walls.length === 0 ? (
-              <View style={styles.emptyOverlay}>
-                <Text style={styles.emptyText}>先点两点画出一段墙</Text>
-                <Text style={styles.emptySub}>墙画好后就能往上面贴照片</Text>
-              </View>
+            {pendingStart ? (
+              <Circle
+                cx={pendingStart.x * GRID_SIZE}
+                cy={pendingStart.y * GRID_SIZE}
+                r={6}
+                fill={AppColors.accent}
+              />
             ) : null}
+
+            {room.walls.map((w) => (
+              <G key={w.id}>
+                <Line
+                  x1={w.x1 * GRID_SIZE}
+                  y1={w.y1 * GRID_SIZE}
+                  x2={w.x2 * GRID_SIZE}
+                  y2={w.y2 * GRID_SIZE}
+                  stroke={AppColors.text}
+                  strokeWidth={5}
+                  strokeLinecap="round"
+                />
+                <Circle cx={w.x1 * GRID_SIZE} cy={w.y1 * GRID_SIZE} r={4} fill={AppColors.text} />
+                <Circle cx={w.x2 * GRID_SIZE} cy={w.y2 * GRID_SIZE} r={4} fill={AppColors.text} />
+              </G>
+            ))}
+
+            {room.photos.map((photo) => {
+              const wall = room.walls.find((w) => w.id === photo.wallId);
+              if (!wall) return null;
+              const p = pointOnWall(wall, photo.t);
+              const cx = p.x * GRID_SIZE;
+              const cy = p.y * GRID_SIZE;
+              return (
+                <G key={photo.id} onPress={() => onPhotoPress(photo)}>
+                  <Rect
+                    x={cx - 14}
+                    y={cy - 14}
+                    width={28}
+                    height={28}
+                    rx={4}
+                    fill={AppColors.surface}
+                    stroke={AppColors.primary}
+                    strokeWidth={2}
+                  />
+                  <SvgImage
+                    x={cx - 12}
+                    y={cy - 12}
+                    width={24}
+                    height={24}
+                    href={photo.imageUri}
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                </G>
+              );
+            })}
+          </Svg>
+        </Pressable>
+
+        {room.walls.length === 0 ? (
+          <View style={styles.emptyOverlay} pointerEvents="none">
+            <Text style={styles.emptyText}>先点两点画出一段墙</Text>
+            <Text style={styles.emptySub}>墙画好后就能往上面贴照片</Text>
           </View>
-        </GestureDetector>
-      </GestureHandlerRootView>
+        ) : null}
+      </View>
 
       <View style={styles.wallList}>
         {room.walls.map((w) => (
@@ -166,7 +175,6 @@ export function FloorplanCanvas({
 }
 
 function nearWall(w: Wall, p: { x: number; y: number }): boolean {
-  // 点到线段距离（网格单位），容差 1 格
   const dx = w.x2 - w.x1;
   const dy = w.y2 - w.y1;
   const len2 = dx * dx + dy * dy;
@@ -178,7 +186,15 @@ function nearWall(w: Wall, p: { x: number; y: number }): boolean {
   return Math.hypot(p.x - cx, p.y - cy) <= 1;
 }
 
-function ModeChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function ModeChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -194,14 +210,15 @@ const styles = StyleSheet.create({
   wrap: { gap: AppSpacing.md },
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: AppSpacing.sm },
   hint: { color: AppColors.textMuted, fontSize: 12, flex: 1, flexWrap: 'wrap' },
+  canvasOuter: { alignItems: 'center' },
   canvas: {
+    width: CANVAS,
     height: CANVAS,
     borderRadius: 12,
     backgroundColor: AppColors.surfaceMuted,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: AppColors.border,
     overflow: 'hidden',
-    justifyContent: 'center',
   },
   emptyOverlay: { position: 'absolute', alignSelf: 'center', alignItems: 'center', gap: 4 },
   emptyText: { color: AppColors.textMuted, fontSize: 15, fontWeight: '700' },
