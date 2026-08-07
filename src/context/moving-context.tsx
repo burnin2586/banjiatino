@@ -10,11 +10,13 @@ import {
 } from 'react';
 
 import { initialMovingState } from '@/data/initial-data';
+import { deleteStoragePhotoFile } from '@/logic/photo-store';
 import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
 import type {
   BoxStatus,
   ItemAction,
   ItemStatus,
+  MarkerRect,
   MovingBox,
   MovingItem,
   MovingState,
@@ -35,6 +37,8 @@ type BoxInput = {
   sourceRoomId: string;
   destinationRoomId: string;
   note?: string;
+  storagePhotoId?: string;
+  markerRect?: MarkerRect;
 };
 
 type ItemInput = {
@@ -51,6 +55,7 @@ export type Lookups = {
   roomById: Map<string, Room>;
   boxById: Map<string, MovingBox>;
   itemsByBox: Map<string, MovingItem[]>;
+  boxesByStoragePhoto: Map<string, MovingBox[]>;
   sourceRooms: Room[];
   destinationRooms: Room[];
 };
@@ -70,6 +75,10 @@ type MovingContextValue = {
   updateItem: (itemId: string, input: ItemInput) => void;
   deleteItem: (itemId: string) => void;
   setItemStatus: (itemId: string, status: ItemStatus) => void;
+  addStoragePhoto: (imageUri: string, title?: string) => string;
+  deleteStoragePhoto: (photoId: string) => Promise<void>;
+  setBoxMarker: (boxId: string, photoId: string, rect: MarkerRect) => void;
+  clearBoxMarker: (boxId: string) => void;
   resetToDemo: () => void;
   startFresh: () => void;
 };
@@ -185,6 +194,8 @@ export function MovingProvider({ children }: PropsWithChildren) {
               destinationRoomId: input.destinationRoomId,
               status: '待整理',
               note: input.note?.trim() ?? '',
+              storagePhotoId: input.storagePhotoId,
+              markerRect: input.markerRect,
               createdAt: now,
               updatedAt: now,
             },
@@ -330,6 +341,62 @@ export function MovingProvider({ children }: PropsWithChildren) {
     [updateState],
   );
 
+  const addStoragePhoto = useCallback(
+    (imageUri: string, title?: string) => {
+      const id = createId('sp');
+      updateState((prev) => ({
+        ...prev,
+        storagePhotos: [
+          { id, imageUri, title, createdAt: Date.now() },
+          ...prev.storagePhotos,
+        ],
+      }));
+      return id;
+    },
+    [updateState],
+  );
+
+  const deleteStoragePhoto = useCallback(
+    async (photoId: string) => {
+      const photo = state.storagePhotos.find((p) => p.id === photoId);
+      updateState((prev) => ({
+        ...prev,
+        storagePhotos: prev.storagePhotos.filter((p) => p.id !== photoId),
+        boxes: prev.boxes.map((b) =>
+          b.storagePhotoId === photoId
+            ? { ...b, storagePhotoId: undefined, markerRect: undefined, updatedAt: Date.now() }
+            : b,
+        ),
+      }));
+      if (photo) await deleteStoragePhotoFile(photo.imageUri);
+    },
+    [state.storagePhotos, updateState],
+  );
+
+  const setBoxMarker = useCallback(
+    (boxId: string, photoId: string, rect: MarkerRect) => {
+      updateState((prev) => ({
+        ...prev,
+        boxes: prev.boxes.map((b) =>
+          b.id === boxId ? { ...b, storagePhotoId: photoId, markerRect: rect, updatedAt: Date.now() } : b,
+        ),
+      }));
+    },
+    [updateState],
+  );
+
+  const clearBoxMarker = useCallback(
+    (boxId: string) => {
+      updateState((prev) => ({
+        ...prev,
+        boxes: prev.boxes.map((b) =>
+          b.id === boxId ? { ...b, storagePhotoId: undefined, markerRect: undefined, updatedAt: Date.now() } : b,
+        ),
+      }));
+    },
+    [updateState],
+  );
+
   const resetToDemo = useCallback(() => {
     updateState(() => initialMovingState);
   }, [updateState]);
@@ -348,6 +415,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
     const roomById = new Map<string, Room>();
     const boxById = new Map<string, MovingBox>();
     const itemsByBox = new Map<string, MovingItem[]>();
+    const boxesByStoragePhoto = new Map<string, MovingBox[]>();
 
     for (const room of state.rooms) {
       roomById.set(room.id, room);
@@ -364,12 +432,22 @@ export function MovingProvider({ children }: PropsWithChildren) {
         itemsByBox.set(item.boxId, [item]);
       }
     }
+    for (const box of state.boxes) {
+      if (!box.storagePhotoId) continue;
+      const list = boxesByStoragePhoto.get(box.storagePhotoId);
+      if (list) {
+        list.push(box);
+      } else {
+        boxesByStoragePhoto.set(box.storagePhotoId, [box]);
+      }
+    }
 
     const sortByOrder = (a: Room, b: Room) => a.order - b.order;
     return {
       roomById,
       boxById,
       itemsByBox,
+      boxesByStoragePhoto,
       sourceRooms: state.rooms.filter((room) => room.kind === 'source').sort(sortByOrder),
       destinationRooms: state.rooms
         .filter((room) => room.kind === 'destination')
@@ -393,6 +471,10 @@ export function MovingProvider({ children }: PropsWithChildren) {
       updateItem,
       deleteItem,
       setItemStatus,
+      addStoragePhoto,
+      deleteStoragePhoto,
+      setBoxMarker,
+      clearBoxMarker,
       resetToDemo,
       startFresh,
     }),
@@ -411,6 +493,10 @@ export function MovingProvider({ children }: PropsWithChildren) {
       updateItem,
       deleteItem,
       setItemStatus,
+      addStoragePhoto,
+      deleteStoragePhoto,
+      setBoxMarker,
+      clearBoxMarker,
       resetToDemo,
       startFresh,
     ],
