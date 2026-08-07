@@ -336,10 +336,11 @@ export function MovingProvider({ children }: PropsWithChildren) {
 
   const startFresh = useCallback(() => {
     updateState((previous) => ({
-      schemaVersion: 2,
+      schemaVersion: 3,
       rooms: previous.rooms,
       boxes: [],
       items: [],
+      storagePhotos: [],
     }));
   }, [updateState]);
 

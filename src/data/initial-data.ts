@@ -3,7 +3,7 @@ import type { MovingState } from '@/types/moving';
 const now = Date.now();
 
 export const initialMovingState: MovingState = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   rooms: [
     { id: 'room-bedroom', name: '卧室', color: '#D8CBE8', kind: 'source', order: 0 },
     { id: 'room-study', name: '书房', color: '#BFDCCB', kind: 'source', order: 1 },
@@ -129,4 +129,5 @@ export const initialMovingState: MovingState = {
       updatedAt: now - 1000,
     },
   ],
+  storagePhotos: [],
 };

@@ -46,14 +46,15 @@ describe('nextBoxCode', () => {
 
 describe('migrateStoredState', () => {
   it('null 或非对象时回退到示例数据', () => {
-    expect(migrateStoredState(null).schemaVersion).toBe(2);
+    expect(migrateStoredState(null).schemaVersion).toBe(3);
+    expect(migrateStoredState(null).storagePhotos).toEqual([]);
     expect(migrateStoredState('hello').rooms.length).toBeGreaterThan(0);
     expect(migrateStoredState(undefined).boxes).toBeDefined();
   });
 
   it('完整 V2 数据保留房间与箱子结构', () => {
     const state: MovingState = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       rooms: [
         { id: 'room-a', name: '客厅', color: '#fff', kind: 'source', order: 0 },
         { id: 'dest-a', name: '客厅', color: '#fff', kind: 'destination', order: 0 },
@@ -72,6 +73,7 @@ describe('migrateStoredState', () => {
         },
       ],
       items: [],
+      storagePhotos: [],
     };
     const result = migrateStoredState(state);
     expect(result.rooms).toHaveLength(2);

@@ -16,6 +16,8 @@ export type Room = {
   order: number;
 };
 
+export type MarkerRect = { x: number; y: number; w: number; h: number };
+
 export type MovingBox = {
   id: string;
   code: string;
@@ -24,6 +26,8 @@ export type MovingBox = {
   destinationRoomId: string;
   status: BoxStatus;
   note: string;
+  storagePhotoId?: string;
+  markerRect?: MarkerRect;
   createdAt: number;
   updatedAt: number;
 };
@@ -42,9 +46,17 @@ export type MovingItem = {
   updatedAt: number;
 };
 
+export type StoragePhoto = {
+  id: string;
+  imageUri: string;
+  title?: string;
+  createdAt: number;
+};
+
 export type MovingState = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   rooms: Room[];
   boxes: MovingBox[];
   items: MovingItem[];
+  storagePhotos: StoragePhoto[];
 };

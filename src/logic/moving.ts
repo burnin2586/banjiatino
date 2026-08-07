@@ -124,5 +124,8 @@ export function migrateStoredState(value: unknown): MovingState {
       updatedAt: item.updatedAt || item.createdAt || now,
     }));
 
-  return { schemaVersion: 2, rooms, boxes, items };
+  const storagePhotos = Array.isArray((stored as any).storagePhotos)
+    ? (stored as any).storagePhotos
+    : [];
+  return { schemaVersion: 3, rooms, boxes, items, storagePhotos };
 }
