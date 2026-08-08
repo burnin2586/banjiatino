@@ -1,5 +1,8 @@
-import { useMemo, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { router, type Href } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   AddButton,
@@ -17,10 +20,20 @@ import {
 } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
+import { saveStoragePhoto } from '@/logic/photo-store';
 import { BOX_STATUSES, type MovingBox } from '@/types/moving';
 
 export default function BoxesScreen() {
-  const { state, isLoading, lookups, addBox, updateBox, deleteBox, setBoxStatus } = useMoving();
+  const {
+    state,
+    isLoading,
+    lookups,
+    addBox,
+    updateBox,
+    deleteBox,
+    setBoxStatus,
+    addStoragePhoto,
+  } = useMoving();
   const sourceRooms = lookups.sourceRooms;
   const destinationRooms = lookups.destinationRooms;
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,11 +44,39 @@ export default function BoxesScreen() {
     destinationRooms[0]?.id ?? '',
   );
   const [note, setNote] = useState('');
+  const [isSavingPhoto, setIsSavingPhoto] = useState(false);
 
   const sortedBoxes = useMemo(
     () => [...state.boxes].sort((a, b) => b.updatedAt - a.updatedAt),
     [state.boxes],
   );
+
+  useEffect(() => {
+    let isMounted = true;
+    async function restorePendingPickerResult() {
+      try {
+        const result = await ImagePicker.getPendingResultAsync();
+        if (!isMounted || !result || !('canceled' in result) || result.canceled) return;
+        const asset = result.assets?.[0];
+        if (!asset) return;
+        setIsSavingPhoto(true);
+        const fileId = `storage-${Date.now()}`;
+        const uri = await saveStoragePhoto(asset.uri, fileId);
+        if (!isMounted) return;
+        const id = addStoragePhoto(uri);
+        router.push(`/storage/${id}` as Href);
+      } catch (error) {
+        console.warn('恢复待处理的收纳照片失败。', error);
+        if (isMounted) Alert.alert('照片恢复失败', '请重新拍照或选择照片。');
+      } finally {
+        if (isMounted) setIsSavingPhoto(false);
+      }
+    }
+    void restorePendingPickerResult();
+    return () => {
+      isMounted = false;
+    };
+  }, [addStoragePhoto]);
 
   function resetForm() {
     setEditingBoxId(null);
@@ -95,6 +136,62 @@ export default function BoxesScreen() {
     ]);
   }
 
+  async function savePickedPhoto(sourceUri: string) {
+    setIsSavingPhoto(true);
+    try {
+      const fileId = `storage-${Date.now()}`;
+      const uri = await saveStoragePhoto(sourceUri, fileId);
+      const id = addStoragePhoto(uri);
+      router.push(`/storage/${id}` as Href);
+    } catch (error) {
+      console.warn('保存收纳照片失败。', error);
+      Alert.alert('照片保存失败', '请确认设备有足够空间，然后重试。');
+    } finally {
+      setIsSavingPhoto(false);
+    }
+  }
+
+  async function pickFromLibrary() {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+      });
+      const asset = result.assets?.[0];
+      if (!result.canceled && asset) await savePickedPhoto(asset.uri);
+    } catch (error) {
+      console.warn('选择收纳照片失败。', error);
+      Alert.alert('无法打开相册', '请稍后重试。');
+    }
+  }
+
+  async function takePhoto() {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('需要相机权限', '允许访问相机后才能拍摄收纳照片。');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+      });
+      const asset = result.assets?.[0];
+      if (!result.canceled && asset) await savePickedPhoto(asset.uri);
+    } catch (error) {
+      console.warn('拍摄收纳照片失败。', error);
+      Alert.alert('无法拍照', '请稍后重试。');
+    }
+  }
+
+  function choosePhotoSource() {
+    Alert.alert('添加收纳照片', '选择照片来源', [
+      { text: '取消', style: 'cancel' },
+      { text: '从相册选择', onPress: () => void pickFromLibrary() },
+      { text: '拍照', onPress: () => void takePhoto() },
+    ]);
+  }
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -108,6 +205,34 @@ export default function BoxesScreen() {
           description="每个箱子都有来源、目标房间和可回退的搬运状态。"
           action={<AddButton label="新增箱子" onPress={openNewBox} />}
         />
+
+        <View>
+          <SectionTitle title="收纳照片" detail={`${state.storagePhotos.length} 张`} />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.photoStrip}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="拍照或选择收纳照片"
+              disabled={isSavingPhoto}
+              style={[styles.addPhotoCard, isSavingPhoto && styles.photoCardDisabled]}
+              onPress={choosePhotoSource}>
+              <Text style={styles.addPlus}>＋</Text>
+              <Text style={styles.addLabel}>{isSavingPhoto ? '保存中…' : '拍照收纳'}</Text>
+            </Pressable>
+            {state.storagePhotos.map((photo) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={photo.title || '打开收纳照片'}
+                key={photo.id}
+                style={styles.photoCard}
+                onPress={() => router.push(`/storage/${photo.id}` as Href)}>
+                <Image source={photo.imageUri} style={styles.photoThumb} contentFit="cover" />
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
         <View>
           <SectionTitle title="全部箱子" detail={`${state.boxes.length} 箱`} />
@@ -280,6 +405,23 @@ function InfoCell({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  photoStrip: { gap: AppSpacing.md, paddingRight: AppSpacing.lg },
+  addPhotoCard: {
+    width: 96,
+    height: 96,
+    borderRadius: AppRadius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderStyle: 'dashed',
+    borderColor: AppColors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.surface,
+  },
+  photoCardDisabled: { opacity: 0.55 },
+  addPlus: { color: AppColors.primary, fontSize: 28, fontWeight: '400' },
+  addLabel: { color: AppColors.primary, fontSize: 11, fontWeight: '700', marginTop: 2 },
+  photoCard: { width: 96, height: 96, borderRadius: AppRadius.md, overflow: 'hidden' },
+  photoThumb: { width: '100%', height: '100%' },
   list: { gap: AppSpacing.md },
   boxHeader: {
     flexDirection: 'row',

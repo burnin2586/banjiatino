@@ -35,6 +35,10 @@ export default function RootLayout() {
           <Tabs.Screen name="boxes" options={{ title: '箱子' }} />
           <Tabs.Screen name="search" options={{ title: '查找' }} />
           <Tabs.Screen name="memory" options={{ title: '回忆' }} />
+          <Tabs.Screen
+            name="storage"
+            options={{ href: null, tabBarStyle: { display: 'none' } }}
+          />
         </Tabs>
       </MemoryProvider>
     </MovingProvider>

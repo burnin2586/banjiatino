@@ -398,7 +398,10 @@ export function MovingProvider({ children }: PropsWithChildren) {
   );
 
   const resetToDemo = useCallback(() => {
-    updateState(() => initialMovingState);
+    updateState((previous) => ({
+      ...initialMovingState,
+      storagePhotos: previous.storagePhotos,
+    }));
   }, [updateState]);
 
   const startFresh = useCallback(() => {
@@ -407,7 +410,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
       rooms: previous.rooms,
       boxes: [],
       items: [],
-      storagePhotos: [],
+      storagePhotos: previous.storagePhotos,
     }));
   }, [updateState]);
 

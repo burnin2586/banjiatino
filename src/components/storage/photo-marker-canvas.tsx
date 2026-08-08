@@ -1,6 +1,14 @@
-import { Image } from 'expo-image';
-import { useState } from 'react';
-import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, type ImageLoadEventData } from 'expo-image';
+import { useRef, useState } from 'react';
+import {
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+  type ViewStyle,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { denormalizeRect, isValidMarkerSize, normalizeRect, type ScreenRect } from '@/logic/storage-marker';
@@ -12,54 +20,92 @@ type Props = {
   mode: 'edit' | 'view';
   onMarkerCreate: (rect: MarkerRect) => void;
   onMarkerPress: (boxId: string) => void;
+  maxSize?: { width: number; height: number };
 };
 
-export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarkerPress }: Props) {
+export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarkerPress, maxSize }: Props) {
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [imageAspectRatio, setImageAspectRatio] = useState(1);
   const [draft, setDraft] = useState<ScreenRect | null>(null);
-  const [start, setStart] = useState({ x: 0, y: 0 });
+  const startRef = useRef({ x: 0, y: 0 });
+  const draftRef = useRef<ScreenRect | null>(null);
 
   function onLayout(e: LayoutChangeEvent) {
     const { width, height } = e.nativeEvent.layout;
     setSize({ width, height });
   }
 
-  function pressIn(e: any) {
+  function imageLoaded(event: ImageLoadEventData) {
+    const { width, height } = event.source;
+    if (width > 0 && height > 0) setImageAspectRatio(width / height);
+  }
+
+  function touchStart(e: GestureResponderEvent) {
     if (mode !== 'edit') return;
     const { locationX, locationY } = e.nativeEvent;
-    setStart({ x: locationX, y: locationY });
-    setDraft({ x: locationX, y: locationY, w: 0, h: 0 });
+    const nextDraft = { x: locationX, y: locationY, w: 0, h: 0 };
+    startRef.current = { x: locationX, y: locationY };
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
   }
-  function pressMove(e: any) {
-    if (mode !== 'edit' || !draft) return;
+
+  function touchMove(e: GestureResponderEvent) {
+    if (mode !== 'edit' || !draftRef.current) return;
     const { locationX, locationY } = e.nativeEvent;
-    setDraft({
-      x: Math.min(start.x, locationX),
-      y: Math.min(start.y, locationY),
-      w: Math.abs(locationX - start.x),
-      h: Math.abs(locationY - start.y),
-    });
+    const x = Math.min(size.width, Math.max(0, locationX));
+    const y = Math.min(size.height, Math.max(0, locationY));
+    const nextDraft = {
+      x: Math.min(startRef.current.x, x),
+      y: Math.min(startRef.current.y, y),
+      w: Math.abs(x - startRef.current.x),
+      h: Math.abs(y - startRef.current.y),
+    };
+    draftRef.current = nextDraft;
+    setDraft(nextDraft);
   }
-  function pressEnd() {
-    if (mode !== 'edit' || !draft) return;
+
+  function touchEnd() {
+    const completedDraft = draftRef.current;
+    draftRef.current = null;
+    setDraft(null);
+    if (mode !== 'edit' || !completedDraft) return;
     if (size.width > 0 && size.height > 0) {
-      const rect = normalizeRect(draft, size);
+      const rect = normalizeRect(completedDraft, size);
       if (isValidMarkerSize(rect)) onMarkerCreate(rect);
     }
+  }
+
+  function touchCancel() {
+    draftRef.current = null;
     setDraft(null);
+  }
+
+  let frameSize: ViewStyle = { width: '100%', aspectRatio: imageAspectRatio };
+  if (maxSize && maxSize.width > 0 && maxSize.height > 0) {
+    let width = maxSize.width;
+    let height = width / imageAspectRatio;
+    if (height > maxSize.height) {
+      height = maxSize.height;
+      width = height * imageAspectRatio;
+    }
+    frameSize = { width, height };
   }
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.frame} onLayout={onLayout}>
-        <Image source={photo.imageUri} style={StyleSheet.absoluteFill} contentFit="contain" />
-        {/* onPressMove exists on Pressable at runtime but is missing from
-            PressableProps types in this RN version, so cast the prop. */}
-        <Pressable
+      <View style={[styles.frame, frameSize]} onLayout={onLayout}>
+        <Image
+          source={photo.imageUri}
           style={StyleSheet.absoluteFill}
-          onPressIn={pressIn}
-          {...{ onPressMove: pressMove } as Record<string, unknown>}
-          onPress={pressEnd}
+          contentFit="contain"
+          onLoad={imageLoaded}
+        />
+        <View
+          style={StyleSheet.absoluteFill}
+          onTouchStart={touchStart}
+          onTouchMove={touchMove}
+          onTouchEnd={touchEnd}
+          onTouchCancel={touchCancel}
         >
           {boxes.map((b) => {
             if (!b.markerRect || size.width === 0) return null;
@@ -68,6 +114,7 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
               <Pressable
                 key={b.id}
                 onPress={() => onMarkerPress(b.id)}
+                onTouchStart={(event) => event.stopPropagation()}
                 style={[
                   styles.marker,
                   { left: s.x, top: s.y, width: s.w, height: s.h },
@@ -87,7 +134,7 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
               ]}
             />
           ) : null}
-        </Pressable>
+        </View>
       </View>
       <Text style={styles.hint}>
         {mode === 'edit' ? '在照片上拖拽画一个框 = 新建箱子' : '点框看里面的物品'}
@@ -97,10 +144,9 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: AppSpacing.sm },
+  wrap: { alignItems: 'center', gap: AppSpacing.sm },
   frame: {
     width: '100%',
-    aspectRatio: 1,
     backgroundColor: AppColors.surfaceMuted,
     borderRadius: 12,
     overflow: 'hidden',
@@ -131,5 +177,5 @@ const styles = StyleSheet.create({
     borderColor: AppColors.accent,
     backgroundColor: 'rgba(217,122,71,0.12)',
   },
-  hint: { color: AppColors.textMuted, fontSize: 12 },
+  hint: { alignSelf: 'stretch', color: AppColors.textMuted, fontSize: 12 },
 });

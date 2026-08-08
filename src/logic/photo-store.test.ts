@@ -1,7 +1,13 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
-import { PHOTO_DIR, deletePhotoFile, savePhotoFile } from '@/logic/photo-store';
-import { STORAGE_PHOTO_DIR, deleteStoragePhotoFile, saveStoragePhoto } from '@/logic/photo-store';
+import {
+  PHOTO_DIR,
+  STORAGE_PHOTO_DIR,
+  deletePhotoFile,
+  deleteStoragePhotoFile,
+  savePhotoFile,
+  saveStoragePhoto,
+} from '@/logic/photo-store';
 
 jest.mock('expo-file-system/legacy', () => ({
   documentDirectory: 'file:///docs/',

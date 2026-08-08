@@ -39,5 +39,6 @@ export async function deleteStoragePhotoFile(uri: string): Promise<void> {
     await FileSystem.deleteAsync(uri, { idempotent: true });
   } catch (error) {
     console.warn('删除收纳照片文件失败', uri, error);
+    throw error;
   }
 }
