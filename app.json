@@ -8,6 +8,9 @@
     "scheme": "banjiatino",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.boninglyu.banjiatino",
+      "buildNumber": "1",
+      "supportsTablet": false,
       "icon": "./assets/expo.icon"
     },
     "android": {
@@ -33,7 +36,15 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "允许“搬家条理”访问照片，用于保存家的回忆和标记物品位置。",
+          "cameraPermission": "允许“搬家条理”使用相机，用于拍摄房间、收纳空间和物品。",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
