@@ -1,15 +1,18 @@
-import { router, useLocalSearchParams, type Href } from 'expo-router';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AddButton, Card, EmptyState, LoadingScreen, ModalSheet, PageHeader, PrimaryButton, Screen, TextButton } from '@/components/ui-kit';
 import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { useMemory } from '@/context/memory-context';
+import type { RootStackParamList } from '@/navigation/types';
 
 const ROOM_COLORS = ['#D8CBE8', '#BFDCCB', '#F0CF9F', '#BCD7E8', '#F3B9B1'];
 
-export default function RoomsScreen() {
-  const { houseId } = useLocalSearchParams<{ houseId: string }>();
+type Props = NativeStackScreenProps<RootStackParamList, 'Rooms'>;
+
+export default function RoomsScreen({ route, navigation }: Props) {
+  const { houseId } = route.params;
   const { state, isLoading, lookups, addRoom, updateRoom, deleteRoom } = useMemory();
   const house = state.houses.find((h) => h.id === houseId);
   const rooms = (lookups.roomsByHouse.get(houseId) ?? []).sort((a, b) => a.order - b.order);
@@ -67,7 +70,7 @@ export default function RoomsScreen() {
           <View style={styles.list}>
             {rooms.map((r) => (
               <Card key={r.id} style={styles.roomCard}>
-                <Pressable style={{ flex: 1 }} onPress={() => router.push(`/memory/${houseId}/${r.id}` as Href)}>
+                <Pressable style={{ flex: 1 }} onPress={() => navigation.navigate('RoomEditor', { roomId: r.id })}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: AppSpacing.md }}>
                     <View style={{ width: 10, height: 34, borderRadius: 999, backgroundColor: r.color }} />
                     <View style={{ gap: 2 }}>

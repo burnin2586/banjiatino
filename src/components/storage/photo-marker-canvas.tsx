@@ -1,8 +1,10 @@
-import { Image, type ImageLoadEventData } from 'expo-image';
 import { useRef, useState } from 'react';
 import {
   type GestureResponderEvent,
+  Image,
+  type ImageLoadEventData,
   type LayoutChangeEvent,
+  type NativeSyntheticEvent,
   type ViewStyle,
   Pressable,
   StyleSheet,
@@ -35,8 +37,8 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
     setSize({ width, height });
   }
 
-  function imageLoaded(event: ImageLoadEventData) {
-    const { width, height } = event.source;
+  function imageLoaded(event: NativeSyntheticEvent<ImageLoadEventData>) {
+    const { width, height } = event.nativeEvent.source;
     if (width > 0 && height > 0) setImageAspectRatio(width / height);
   }
 
@@ -95,9 +97,9 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
     <View style={styles.wrap}>
       <View style={[styles.frame, frameSize]} onLayout={onLayout}>
         <Image
-          source={photo.imageUri}
+          source={{ uri: photo.imageUri }}
           style={StyleSheet.absoluteFill}
-          contentFit="contain"
+          resizeMode="contain"
           onLoad={imageLoaded}
         />
         <View

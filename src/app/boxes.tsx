@@ -1,8 +1,8 @@
-import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
-import { router, type Href } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMemo, useState } from 'react';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 import {
   AddButton,
@@ -22,8 +22,10 @@ import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import { saveStoragePhoto } from '@/logic/photo-store';
 import { BOX_STATUSES, type MovingBox } from '@/types/moving';
+import type { RootStackParamList } from '@/navigation/types';
 
 export default function BoxesScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
     state,
     isLoading,
@@ -50,33 +52,6 @@ export default function BoxesScreen() {
     () => [...state.boxes].sort((a, b) => b.updatedAt - a.updatedAt),
     [state.boxes],
   );
-
-  useEffect(() => {
-    let isMounted = true;
-    async function restorePendingPickerResult() {
-      try {
-        const result = await ImagePicker.getPendingResultAsync();
-        if (!isMounted || !result || !('canceled' in result) || result.canceled) return;
-        const asset = result.assets?.[0];
-        if (!asset) return;
-        setIsSavingPhoto(true);
-        const fileId = `storage-${Date.now()}`;
-        const uri = await saveStoragePhoto(asset.uri, fileId);
-        if (!isMounted) return;
-        const id = addStoragePhoto(uri);
-        router.push(`/storage/${id}` as Href);
-      } catch (error) {
-        console.warn('恢复待处理的收纳照片失败。', error);
-        if (isMounted) Alert.alert('照片恢复失败', '请重新拍照或选择照片。');
-      } finally {
-        if (isMounted) setIsSavingPhoto(false);
-      }
-    }
-    void restorePendingPickerResult();
-    return () => {
-      isMounted = false;
-    };
-  }, [addStoragePhoto]);
 
   function resetForm() {
     setEditingBoxId(null);
@@ -142,7 +117,7 @@ export default function BoxesScreen() {
       const fileId = `storage-${Date.now()}`;
       const uri = await saveStoragePhoto(sourceUri, fileId);
       const id = addStoragePhoto(uri);
-      router.push(`/storage/${id}` as Href);
+      navigation.navigate('StoragePhoto', { photoId: id });
     } catch (error) {
       console.warn('保存收纳照片失败。', error);
       Alert.alert('照片保存失败', '请确认设备有足够空间，然后重试。');
@@ -153,12 +128,12 @@ export default function BoxesScreen() {
 
   async function pickFromLibrary() {
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+      const result = await launchImageLibrary({
+        mediaType: 'photo',
         quality: 0.8,
       });
       const asset = result.assets?.[0];
-      if (!result.canceled && asset) await savePickedPhoto(asset.uri);
+      if (!result.didCancel && asset?.uri) await savePickedPhoto(asset.uri);
     } catch (error) {
       console.warn('选择收纳照片失败。', error);
       Alert.alert('无法打开相册', '请稍后重试。');
@@ -167,17 +142,12 @@ export default function BoxesScreen() {
 
   async function takePhoto() {
     try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert('需要相机权限', '允许访问相机后才能拍摄收纳照片。');
-        return;
-      }
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ['images'],
+      const result = await launchCamera({
+        mediaType: 'photo',
         quality: 0.8,
       });
       const asset = result.assets?.[0];
-      if (!result.canceled && asset) await savePickedPhoto(asset.uri);
+      if (!result.didCancel && asset?.uri) await savePickedPhoto(asset.uri);
     } catch (error) {
       console.warn('拍摄收纳照片失败。', error);
       Alert.alert('无法拍照', '请稍后重试。');
@@ -227,8 +197,8 @@ export default function BoxesScreen() {
                 accessibilityLabel={photo.title || '打开收纳照片'}
                 key={photo.id}
                 style={styles.photoCard}
-                onPress={() => router.push(`/storage/${photo.id}` as Href)}>
-                <Image source={photo.imageUri} style={styles.photoThumb} contentFit="cover" />
+                onPress={() => navigation.navigate('StoragePhoto', { photoId: photo.id })}>
+                <Image source={{ uri: photo.imageUri }} style={styles.photoThumb} resizeMode="cover" />
               </Pressable>
             ))}
           </ScrollView>

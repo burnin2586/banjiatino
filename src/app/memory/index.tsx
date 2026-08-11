@@ -1,14 +1,17 @@
-import { router, type Href } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AddButton, Card, EmptyState, LoadingScreen, ModalSheet, PageHeader, PrimaryButton, Screen } from '@/components/ui-kit';
 import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { useMemory } from '@/context/memory-context';
+import type { RootStackParamList } from '@/navigation/types';
 
 const HOUSE_COLORS = ['#D8CBE8', '#BFDCCB', '#F0CF9F', '#BCD7E8', '#F3B9B1'];
 
 export default function MemoryHomeScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { state, isLoading, addHouse, deleteHouse } = useMemory();
   const [modalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
@@ -57,7 +60,7 @@ export default function MemoryHomeScreen() {
                   color={h.coverColor}
                   name={h.name}
                   roomCount={state.rooms.filter((r) => r.houseId === h.id).length}
-                  onOpen={() => router.push(`/memory/${h.id}` as Href)}
+                  onOpen={() => navigation.navigate('Rooms', { houseId: h.id })}
                   onDelete={() => confirmDelete(h.id, h.name)}
                 />
               </Card>

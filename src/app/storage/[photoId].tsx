@@ -1,4 +1,4 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import {
   Alert,
@@ -22,9 +22,12 @@ import {
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import type { MarkerRect, MovingBox, MovingItem } from '@/types/moving';
+import type { RootStackParamList } from '@/navigation/types';
 
-export default function StoragePhotoScreen() {
-  const { photoId } = useLocalSearchParams<{ photoId: string }>();
+type Props = NativeStackScreenProps<RootStackParamList, 'StoragePhoto'>;
+
+export default function StoragePhotoScreen({ route, navigation }: Props) {
+  const { photoId } = route.params;
   const {
     state,
     isLoading,
@@ -51,7 +54,10 @@ export default function StoragePhotoScreen() {
     return (
       <SafeAreaView style={styles.missing}>
         <Text style={styles.missingTitle}>这张收纳照片不存在</Text>
-        <TextButton label="返回箱子页" onPress={() => router.replace('/boxes')} />
+        <TextButton
+          label="返回箱子页"
+          onPress={() => navigation.replace('MainTabs', { screen: 'Boxes' })}
+        />
       </SafeAreaView>
     );
   }
@@ -131,7 +137,7 @@ export default function StoragePhotoScreen() {
         text: '删除',
         style: 'destructive',
         onPress: () => {
-          router.back();
+          navigation.goBack();
           void deleteStoragePhoto(currentPhoto.id).catch(() => {
             Alert.alert('删除失败', '照片记录已移除，但本地文件清理失败。');
           });
@@ -143,7 +149,7 @@ export default function StoragePhotoScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
-        <Text onPress={() => router.back()} style={styles.back}>
+        <Text onPress={() => navigation.goBack()} style={styles.back}>
           ‹ 返回
         </Text>
         <Text numberOfLines={1} style={styles.title}>

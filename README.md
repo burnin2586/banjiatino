@@ -1,90 +1,78 @@
 # 搬家条理
 
-一个在 Expo Go 中运行的本地优先搬家整理 App。它用“房间 → 箱子 → 物品 → 到达清点”的方式，帮助用户在搬家过程中追踪重要物品的去向。
+本地优先的 iOS 搬家整理 App，使用 React Native Community CLI 和原生 Xcode 工程，不依赖 Expo。
 
 ## 当前功能
 
 - 搬家整体进度与待办提醒
 - 自定义旧家和新家的房间
 - 创建连续编号的箱子并设置来源、目标房间
-- 添加物品、数量、原位置、新家位置、处理方式、所属箱子和备注
-- 编辑和删除箱子、物品，并将状态调整到任意阶段
-- 删除非空箱子时保留物品并自动恢复为未分配状态
-- 按物品名称、原位置、新家位置、房间、箱号和备注搜索
-- 自动把 V1 本地数据迁移到 V2 数据结构
-- 使用 SQLite 将数据保存在设备本地
+- 添加、编辑、搜索和清点物品
+- 拍照记录储物位置和房间布局
+- 数据与照片保存在设备本地
+
+## 环境要求
+
+- Node.js 20.19.4 或更高版本
+- Xcode 16.1 或更高版本
+- CocoaPods
+- 真机运行和发布需要 Apple Developer Program、有效 Team 与签名配置
+
+## 用 Xcode 运行
+
+首次拉取或原生依赖变化后：
+
+```bash
+npm install
+cd ios
+pod install
+cd ..
+```
+
+启动 Metro：
+
+```bash
+npm start
+```
+
+然后打开 `ios/BanjiaTiaoli.xcworkspace`（不要打开 `.xcodeproj`），选择 `BanjiaTiaoli` scheme 和模拟器或真机，点击 Run。
+
+真机首次运行还需要在 Xcode 的 `Signing & Capabilities` 中选择 Team，并把占位 Bundle Identifier `com.banjiatino.app` 改成自己的唯一标识。
+
+也可从命令行启动模拟器：
+
+```bash
+npm run ios
+```
+
+## 质量检查
+
+```bash
+npm run typecheck
+npm run lint
+npm test -- --runInBand
+```
+
+## 发布前清单
+
+- 在 `ios/BanjiaTiaoli/Images.xcassets/AppIcon.appiconset` 放入正式 App Icon；当前原生工程故意未沿用 Expo 默认图标
+- 确认 Bundle Identifier、Team、证书和 provisioning profile
+- 递增 `MARKETING_VERSION` 与 `CURRENT_PROJECT_VERSION`
+- 在真机验证相机、相册的允许/拒绝/受限状态以及 App 重启后的数据和照片
+- 按最终依赖和实际数据行为复核 `PrivacyInfo.xcprivacy` 与 App Store Connect 隐私问卷
+- 准备隐私政策 URL、支持 URL、截图、描述、年龄分级和审核说明
+- 用 Xcode 的 Product > Archive，在 Organizer 中 Validate 后上传 TestFlight/App Store Connect
+
+## 已发布 Expo 版本的数据迁移
+
+当前原生版本使用 AsyncStorage，不能自动读取旧版 `expo-sqlite/kv-store` 的 `ExpoSQLiteStorage` 数据库。如果已有真实用户安装过 Expo 版本，发布前必须增加一次性迁移，并保持原 Bundle Identifier；否则升级后旧数据会看起来丢失。照片仍沿用 Documents 下的 `memory-photos` 和 `storage-photos` 相对目录。
 
 ## 项目结构
 
-- `src/app/`：四个主要页面和底部导航
-- `src/context/`：搬家状态与本地持久化
-- `src/components/`：共用界面组件
-- `src/data/`：首次启动时使用的示例数据
-- `src/types/`：房间、箱子和物品的数据类型
-
-## 本地启动
-
-1. 安装依赖：`npm install`
-2. 启动 Expo：`npx expo start`
-3. 使用同一网络下的 iPhone 打开 Expo Go 并扫描二维码
-
-本项目当前定位为个人原型，不需要 Apple Developer Program。
-
----
-
-## Expo starter reference
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `App.tsx`：导航和全局 Provider 入口
+- `src/app/`：页面
+- `src/navigation/`：React Navigation 类型
+- `src/context/`：本地状态与持久化
+- `src/components/`：共用组件
+- `src/logic/`：领域逻辑和照片文件操作
+- `ios/`：可直接由 Xcode 打开的原生工程

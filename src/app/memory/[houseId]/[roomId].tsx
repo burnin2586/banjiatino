@@ -1,7 +1,7 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FloorplanCanvas } from '@/components/memory/floorplan-canvas';
@@ -9,9 +9,12 @@ import { LoadingScreen, ModalSheet, PrimaryButton } from '@/components/ui-kit';
 import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { useMemory } from '@/context/memory-context';
 import type { RoomPhoto, Wall } from '@/types/memory';
+import type { RootStackParamList } from '@/navigation/types';
 
-export default function RoomEditorScreen() {
-  const { roomId } = useLocalSearchParams<{ roomId: string }>();
+type Props = NativeStackScreenProps<RootStackParamList, 'RoomEditor'>;
+
+export default function RoomEditorScreen({ route, navigation }: Props) {
+  const { roomId } = route.params;
   const {
     state,
     isLoading,
@@ -32,12 +35,15 @@ export default function RoomEditorScreen() {
   if (isLoading || !room) return <LoadingScreen label="正在打开房间…" />;
 
   async function pickAndAdd(wallId: string) {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
-    if (result.canceled || !result.assets[0]) return;
-    await addPhoto(room!.id, wallId, result.assets[0].uri, 0.5);
+    try {
+      const result = await launchImageLibrary({ mediaType: 'photo', quality: 0.8 });
+      const uri = result.assets?.[0]?.uri;
+      if (result.didCancel || !uri) return;
+      await addPhoto(room!.id, wallId, uri, 0.5);
+    } catch (error) {
+      console.warn('选择房间照片失败。', error);
+      Alert.alert('无法打开相册', '请稍后重试。');
+    }
   }
 
   function openPhoto(p: RoomPhoto) {
@@ -63,7 +69,7 @@ export default function RoomEditorScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: AppColors.background }}>
       <View style={styles.header}>
-        <Text onPress={() => router.back()} style={styles.back}>‹ 返回</Text>
+        <Text onPress={() => navigation.goBack()} style={styles.back}>‹ 返回</Text>
         <Text style={styles.title}>{room.name}</Text>
         <Text onPress={openNote} style={styles.noteBtn}>备注</Text>
       </View>
