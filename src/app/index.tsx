@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   Card,
+  ModalSheet,
   PageHeader,
   PrimaryButton,
   Screen,
@@ -11,15 +14,34 @@ import {
   TextButton,
 } from '@/components/ui-kit';
 import { RoomManager } from '@/components/room-manager';
+import { DateWheel } from '@/components/date-wheel';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
+import { computeCountdown, computeSuggestedDate, nextPendingTask } from '@/logic/task-timeline';
+import type { RootStackParamList } from '@/navigation/types';
 
 import { getHomeMilestone, homeHeroPalette } from './home-presentation';
+import { formatSuggestedDate } from './task-timeline-presentation';
 
 export default function HomeScreen() {
-  const { state, isLoading, lookups, startFresh } = useMoving();
+  const {
+    state,
+    isLoading,
+    lookups,
+    startFresh,
+    setMovingDate,
+    importTaskPresets,
+  } = useMoving();
+  const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [roomManagerVisible, setRoomManagerVisible] = useState(false);
+  const [pickingDate, setPickingDate] = useState(false);
   const sourceRooms = lookups.sourceRooms;
+  const movingDate = state.movingDate;
+  const tasks = state.tasks;
+
+  const countdown = movingDate ? computeCountdown(movingDate, Date.now()) : null;
+  const nextTask = nextPendingTask(tasks, movingDate, Date.now());
+  const nextSuggested = nextTask ? computeSuggestedDate(movingDate, nextTask.dueOffsetDays) : null;
 
   const summary = useMemo(() => {
     const movingItems = state.items.filter((item) => item.action === '带走');
@@ -62,6 +84,31 @@ export default function HomeScreen() {
         title="一件不落地搬走"
         description="不用靠脑子记，让每件东西都有明确去向。"
       />
+
+      {movingDate === null ? (
+        <Card style={styles.countdownCard}>
+          <View style={styles.countdownCopy}>
+            <Text style={styles.countdownTitle}>设置搬家日，开始倒计时</Text>
+            <Text style={styles.countdownDesc}>设个日子，App 会告诉你现在该做什么。</Text>
+          </View>
+          <View style={styles.countdownActions}>
+            <PrimaryButton compact label="设置搬家日" onPress={() => setPickingDate(true)} />
+            <TextButton label="一键导入任务" onPress={importTaskPresets} />
+          </View>
+        </Card>
+      ) : (
+        <Pressable onPress={() => nav.navigate('TaskTimeline')}>
+          <Card style={[styles.countdownCard, styles.countdownCardActive]}>
+            <Text style={styles.countdownEyebrow}>搬家节奏</Text>
+            <Text style={styles.countdownBig}>{countdown?.label}</Text>
+            <Text style={styles.countdownSub}>
+              {nextTask
+                ? `下一个任务：${nextTask.title}（建议 ${formatSuggestedDate(nextSuggested)}）`
+                : '所有任务已完成 🎉'}
+            </Text>
+          </Card>
+        </Pressable>
+      )}
 
       {state.items.some((item) => item.id.startsWith('item-')) &&
       state.boxes.some((box) => box.id.startsWith('box-00')) ? (
@@ -179,6 +226,10 @@ export default function HomeScreen() {
         </View>
       </View>
     </Screen>
+    <ModalSheet title="设置搬家日" visible={pickingDate} onClose={() => setPickingDate(false)}>
+      <DateWheel value={movingDate ?? Date.now()} onChange={(ts) => setMovingDate(ts)} />
+      <PrimaryButton label="完成" onPress={() => setPickingDate(false)} />
+    </ModalSheet>
     <RoomManager visible={roomManagerVisible} onClose={() => setRoomManagerVisible(false)} />
     </>
   );
@@ -204,6 +255,53 @@ const styles = StyleSheet.create({
   loadingText: {
     color: AppColors.textMuted,
     fontSize: 15,
+  },
+  countdownCard: {
+    gap: AppSpacing.md,
+    padding: AppSpacing.lg,
+  },
+  countdownCardActive: {
+    backgroundColor: AppColors.primary,
+    borderColor: AppColors.primary,
+    borderRadius: AppRadius.page,
+    padding: AppSpacing.xl,
+    gap: AppSpacing.xs,
+  },
+  countdownCopy: {
+    gap: AppSpacing.xs,
+  },
+  countdownTitle: {
+    color: AppColors.text,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  countdownDesc: {
+    color: AppColors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  countdownActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: AppSpacing.md,
+  },
+  countdownEyebrow: {
+    color: AppColors.primarySoft,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  countdownBig: {
+    color: AppColors.white,
+    fontSize: 28,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+  countdownSub: {
+    color: AppColors.primarySoft,
+    fontSize: 12,
+    lineHeight: 18,
   },
   heroCard: {
     backgroundColor: AppColors.primary,
