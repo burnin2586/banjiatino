@@ -55,17 +55,13 @@ npm test -- --runInBand
 
 ## 发布前清单
 
-- 在 `ios/BanjiaTiaoli/Images.xcassets/AppIcon.appiconset` 放入正式 App Icon；当前原生工程故意未沿用 Expo 默认图标
+- 在 `ios/BanjiaTiaoli/Images.xcassets/AppIcon.appiconset` 放入正式 App Icon
 - 确认 Bundle Identifier、Team、证书和 provisioning profile
 - 递增 `MARKETING_VERSION` 与 `CURRENT_PROJECT_VERSION`
 - 在真机验证相机、相册的允许/拒绝/受限状态以及 App 重启后的数据和照片
 - 按最终依赖和实际数据行为复核 `PrivacyInfo.xcprivacy` 与 App Store Connect 隐私问卷
 - 准备隐私政策 URL、支持 URL、截图、描述、年龄分级和审核说明
 - 用 Xcode 的 Product > Archive，在 Organizer 中 Validate 后上传 TestFlight/App Store Connect
-
-## 已发布 Expo 版本的数据迁移
-
-当前原生版本使用 AsyncStorage，不能自动读取旧版 `expo-sqlite/kv-store` 的 `ExpoSQLiteStorage` 数据库。如果已有真实用户安装过 Expo 版本，发布前必须增加一次性迁移，并保持原 Bundle Identifier；否则升级后旧数据会看起来丢失。照片仍沿用 Documents 下的 `memory-photos` 和 `storage-photos` 相对目录。
 
 ## 项目结构
 
