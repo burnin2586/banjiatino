@@ -10,8 +10,10 @@ import {
 } from 'react';
 
 import { initialMovingState } from '@/data/initial-data';
-import { deleteStoragePhotoFile } from '@/logic/photo-store';
+import { TASK_PRESETS } from '@/data/task-presets';
 import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
+import { deleteStoragePhotoFile } from '@/logic/photo-store';
+import { buildTasksFromPresets } from '@/logic/task-timeline';
 import type {
   BoxStatus,
   ItemAction,
@@ -20,6 +22,7 @@ import type {
   MovingBox,
   MovingItem,
   MovingState,
+  MovingTask,
   Room,
   RoomKind,
 } from '@/types/moving';
@@ -79,6 +82,15 @@ type MovingContextValue = {
   deleteStoragePhoto: (photoId: string) => Promise<void>;
   setBoxMarker: (boxId: string, photoId: string, rect: MarkerRect) => void;
   clearBoxMarker: (boxId: string) => void;
+  setMovingDate: (date: number | null) => void;
+  addTask: (input: { title: string; dueOffsetDays: number; note?: string }) => void;
+  updateTask: (
+    taskId: string,
+    input: { title: string; dueOffsetDays: number; note?: string },
+  ) => void;
+  deleteTask: (taskId: string) => void;
+  toggleTask: (taskId: string) => void;
+  importTaskPresets: () => void;
   resetToDemo: () => void;
   startFresh: () => void;
 };
@@ -397,6 +409,96 @@ export function MovingProvider({ children }: PropsWithChildren) {
     [updateState],
   );
 
+  const setMovingDate = useCallback(
+    (date: number | null) => {
+      updateState((prev) => ({ ...prev, movingDate: date }));
+    },
+    [updateState],
+  );
+
+  const addTask = useCallback(
+    (input: { title: string; dueOffsetDays: number; note?: string }) => {
+      updateState((prev) => {
+        const now = Date.now();
+        return {
+          ...prev,
+          tasks: [
+            {
+              id: createId('task'),
+              title: input.title.trim(),
+              dueOffsetDays: input.dueOffsetDays,
+              done: false,
+              note: input.note?.trim() ?? '',
+              createdAt: now,
+              updatedAt: now,
+            },
+            ...prev.tasks,
+          ],
+        };
+      });
+    },
+    [updateState],
+  );
+
+  const updateTask = useCallback(
+    (taskId: string, input: { title: string; dueOffsetDays: number; note?: string }) => {
+      updateState((prev) => ({
+        ...prev,
+        tasks: prev.tasks.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                title: input.title.trim(),
+                dueOffsetDays: input.dueOffsetDays,
+                note: input.note?.trim() ?? '',
+                updatedAt: Date.now(),
+              }
+            : t,
+        ),
+      }));
+    },
+    [updateState],
+  );
+
+  const deleteTask = useCallback(
+    (taskId: string) => {
+      updateState((prev) => ({
+        ...prev,
+        tasks: prev.tasks.filter((t) => t.id !== taskId),
+      }));
+    },
+    [updateState],
+  );
+
+  const toggleTask = useCallback(
+    (taskId: string) => {
+      updateState((prev) => ({
+        ...prev,
+        tasks: prev.tasks.map((t) =>
+          t.id === taskId ? { ...t, done: !t.done, updatedAt: Date.now() } : t,
+        ),
+      }));
+    },
+    [updateState],
+  );
+
+  const importTaskPresets = useCallback(() => {
+    updateState((prev) => {
+      const now = Date.now();
+      const seeds = buildTasksFromPresets(TASK_PRESETS);
+      const created = seeds.map((s, i) => ({
+        id: createId('task'),
+        title: s.title,
+        dueOffsetDays: s.dueOffsetDays,
+        done: s.done,
+        note: s.note,
+        createdAt: now + i,
+        updatedAt: now + i,
+      }));
+      return { ...prev, tasks: [...created, ...prev.tasks] };
+    });
+  }, [updateState]);
+
   const resetToDemo = useCallback(() => {
     updateState((previous) => ({
       ...initialMovingState,
@@ -480,6 +582,12 @@ export function MovingProvider({ children }: PropsWithChildren) {
       deleteStoragePhoto,
       setBoxMarker,
       clearBoxMarker,
+      setMovingDate,
+      addTask,
+      updateTask,
+      deleteTask,
+      toggleTask,
+      importTaskPresets,
       resetToDemo,
       startFresh,
     }),
@@ -502,6 +610,12 @@ export function MovingProvider({ children }: PropsWithChildren) {
       deleteStoragePhoto,
       setBoxMarker,
       clearBoxMarker,
+      setMovingDate,
+      addTask,
+      updateTask,
+      deleteTask,
+      toggleTask,
+      importTaskPresets,
       resetToDemo,
       startFresh,
     ],
