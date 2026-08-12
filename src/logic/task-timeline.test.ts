@@ -81,18 +81,18 @@ describe('nextPendingTask', () => {
       task({ id: 'done', dueOffsetDays: -10, done: true }),
     ];
     const moving = localMidnight(2026, 8, 12);
-    expect(nextPendingTask(tasks, moving, localMidnight(2026, 8, 1))?.id).toBe('soon');
+    expect(nextPendingTask(tasks, moving)?.id).toBe('soon');
   });
   it('全部完成返回 null', () => {
     const tasks = [task({ done: true })];
-    expect(nextPendingTask(tasks, 1_000_000, 1)).toBeNull();
+    expect(nextPendingTask(tasks, 1_000_000)).toBeNull();
   });
   it('movingDate 为 null 时仍按 offset 升序取第一条', () => {
     const tasks = [
       task({ id: 'a', dueOffsetDays: 3 }),
       task({ id: 'b', dueOffsetDays: -2 }),
     ];
-    expect(nextPendingTask(tasks, null, 1)?.id).toBe('b');
+    expect(nextPendingTask(tasks, null)?.id).toBe('b');
   });
 });
 

@@ -136,8 +136,8 @@ export function migrateStoredState(value: unknown): MovingState {
         .filter((t): t is MovingTask => {
           return (
             !!t && typeof t === 'object' &&
-            typeof (t as MovingTask).id === 'string' &&
-            typeof (t as MovingTask).title === 'string' &&
+            typeof (t as MovingTask).id === 'string' && (t as MovingTask).id.trim().length > 0 &&
+            typeof (t as MovingTask).title === 'string' && (t as MovingTask).title.trim().length > 0 &&
             typeof (t as MovingTask).dueOffsetDays === 'number'
           );
         })

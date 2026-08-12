@@ -160,4 +160,21 @@ describe('migrateStoredState', () => {
     expect(result.tasks).toHaveLength(1);
     expect(result.tasks[0].title).toBe('约搬家公司');
   });
+
+  it('tasks 缺 id/title/dueOffsetDays 的非法项被丢弃', () => {
+    const stored = {
+      rooms: [{ id: 'room-a', name: '客厅', color: '#fff', kind: 'source', order: 0 }],
+      boxes: [],
+      items: [],
+      tasks: [
+        { id: '', title: '空id', dueOffsetDays: 0, done: false },
+        { id: 'ok', title: '缺offset', done: false },
+        { id: 'good', title: '合法', dueOffsetDays: -3, done: false },
+      ],
+    };
+    const result = migrateStoredState(stored);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].id).toBe('good');
+    expect(result.tasks[0].title).toBe('合法');
+  });
 });

@@ -68,6 +68,11 @@ export function DateWheel({
 }) {
   const initial = useMemo(() => fromDateStamp(value), [value]);
   const [parts, setParts] = useState<DateParts>(initial);
+  // 外部 value 变化时（例如父组件清空搬家日回退到 Date.now()）同步滚轮。
+  // 用户滚动场景下 value 回流与 finalParts 往返一致，setParts 触发 React bail out，无抖动。
+  useEffect(() => {
+    setParts(fromDateStamp(value));
+  }, [value]);
   const years = useMemo(() => yearRange(centerYear ?? initial.year), [centerYear, initial.year]);
   const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
   const days = useMemo(

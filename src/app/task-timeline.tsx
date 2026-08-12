@@ -140,7 +140,6 @@ export default function TaskTimelineScreen() {
 
       <ModalSheet title="设置搬家日" visible={pickingDate} onClose={() => setPickingDate(false)}>
         <DateWheel value={movingDate ?? Date.now()} onChange={(ts) => setMovingDate(ts)} />
-        <PrimaryButton label="完成" onPress={() => setPickingDate(false)} />
         {movingDate !== null ? (
           <TextButton
             label="清除搬家日"

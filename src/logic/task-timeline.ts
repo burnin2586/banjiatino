@@ -56,7 +56,6 @@ export function computeCountdown(
 export function nextPendingTask(
   tasks: MovingTask[],
   movingDate: number | null,
-  _today: number,
 ): MovingTask | null {
   const pending = tasks
     .filter((t) => !t.done)

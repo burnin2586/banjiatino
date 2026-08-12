@@ -40,7 +40,7 @@ export default function HomeScreen() {
   const tasks = state.tasks;
 
   const countdown = movingDate ? computeCountdown(movingDate, Date.now()) : null;
-  const nextTask = nextPendingTask(tasks, movingDate, Date.now());
+  const nextTask = nextPendingTask(tasks, movingDate);
   const nextSuggested = nextTask ? computeSuggestedDate(movingDate, nextTask.dueOffsetDays) : null;
 
   const summary = useMemo(() => {
@@ -228,7 +228,6 @@ export default function HomeScreen() {
     </Screen>
     <ModalSheet title="设置搬家日" visible={pickingDate} onClose={() => setPickingDate(false)}>
       <DateWheel value={movingDate ?? Date.now()} onChange={(ts) => setMovingDate(ts)} />
-      <PrimaryButton label="完成" onPress={() => setPickingDate(false)} />
     </ModalSheet>
     <RoomManager visible={roomManagerVisible} onClose={() => setRoomManagerVisible(false)} />
     </>
