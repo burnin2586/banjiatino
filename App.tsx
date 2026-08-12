@@ -23,6 +23,7 @@ import MemoryHomeScreen from '@/app/memory/index';
 import RoomsScreen from '@/app/memory/[houseId]/index';
 import RoomEditorScreen from '@/app/memory/[houseId]/[roomId]';
 import StoragePhotoScreen from '@/app/storage/[photoId]';
+import TaskTimelineScreen from '@/app/task-timeline';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
 import { MemoryProvider } from '@/context/memory-context';
 import { MovingProvider } from '@/context/moving-context';
@@ -109,6 +110,7 @@ export default function App() {
             <RootStack.Screen name="Rooms" component={RoomsScreen} />
             <RootStack.Screen name="RoomEditor" component={RoomEditorScreen} />
             <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
+            <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
           </RootStack.Navigator>
         </NavigationContainer>
       </MemoryProvider>

@@ -13,4 +13,5 @@ export type RootStackParamList = {
   Rooms: { houseId: string };
   RoomEditor: { roomId: string };
   StoragePhoto: { photoId: string };
+  TaskTimeline: undefined;
 };
