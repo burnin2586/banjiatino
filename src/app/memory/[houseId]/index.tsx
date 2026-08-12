@@ -58,6 +58,7 @@ export default function RoomsScreen({ route, navigation }: Props) {
   return (
     <>
       <Screen>
+        <TextButton label="‹ 返回" onPress={() => navigation.goBack()} />
         <PageHeader
           eyebrow={house.name}
           title="房间"
