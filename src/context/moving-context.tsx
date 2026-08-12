@@ -10,7 +10,9 @@ import {
 } from 'react';
 
 import { initialMovingState } from '@/data/initial-data';
+import { type ItemTemplateEntry } from '@/data/item-templates';
 import { TASK_PRESETS } from '@/data/task-presets';
+import { buildItemsFromTemplate } from '@/logic/item-template';
 import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
 import { deleteStoragePhotoFile } from '@/logic/photo-store';
 import { buildTasksFromPresets } from '@/logic/task-timeline';
@@ -91,6 +93,7 @@ type MovingContextValue = {
   deleteTask: (taskId: string) => void;
   toggleTask: (taskId: string) => void;
   importTaskPresets: () => void;
+  addItemsFromTemplate: (entries: ItemTemplateEntry[], roomName: string) => void;
   resetToDemo: () => void;
   startFresh: () => void;
 };
@@ -499,6 +502,24 @@ export function MovingProvider({ children }: PropsWithChildren) {
     });
   }, [updateState]);
 
+  const addItemsFromTemplate = useCallback(
+    (entries: ItemTemplateEntry[], roomName: string) => {
+      updateState((prev) => {
+        const now = Date.now();
+        const seeds = buildItemsFromTemplate(entries, roomName);
+        const created = seeds.map((s, i) => ({
+          id: createId('item'),
+          ...s,
+          status: '待整理' as const,
+          createdAt: now + i,
+          updatedAt: now + i,
+        }));
+        return { ...prev, items: [...created, ...prev.items] };
+      });
+    },
+    [updateState],
+  );
+
   const resetToDemo = useCallback(() => {
     updateState((previous) => ({
       ...initialMovingState,
@@ -588,6 +609,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
       deleteTask,
       toggleTask,
       importTaskPresets,
+      addItemsFromTemplate,
       resetToDemo,
       startFresh,
     }),
@@ -616,6 +638,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
       deleteTask,
       toggleTask,
       importTaskPresets,
+      addItemsFromTemplate,
       resetToDemo,
       startFresh,
     ],

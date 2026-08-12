@@ -15,6 +15,7 @@ import {
   StatusBadge,
   TextButton,
 } from '@/components/ui-kit';
+import { TemplatePicker } from '@/components/template-picker';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import {
@@ -35,6 +36,7 @@ export default function ItemsScreen() {
     setItemStatus,
   } = useMoving();
   const [modalVisible, setModalVisible] = useState(false);
+  const [templateVisible, setTemplateVisible] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -133,6 +135,9 @@ export default function ItemsScreen() {
                   description="记录旧家位置和新家位置，填错了也可以随时修改。"
                   action={<AddButton label="新增物品" onPress={openNewItem} />}
                 />
+                <View style={styles.headerActions}>
+                  <TextButton label="从模板添加" onPress={() => setTemplateVisible(true)} />
+                </View>
                 <SectionTitle title="全部物品" detail={`${state.items.length} 类`} />
               </View>
             }
@@ -320,6 +325,11 @@ export default function ItemsScreen() {
 
         <PrimaryButton label={editingItemId ? '保存修改' : '保存物品'} onPress={handleSubmit} />
       </ModalSheet>
+
+      <TemplatePicker
+        visible={templateVisible}
+        onClose={() => setTemplateVisible(false)}
+      />
     </>
   );
 }
@@ -354,6 +364,11 @@ const styles = StyleSheet.create({
   headerBlock: {
     gap: AppSpacing.xl,
     marginBottom: AppSpacing.md,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: AppSpacing.sm,
   },
   listGap: {
     height: AppSpacing.md,
