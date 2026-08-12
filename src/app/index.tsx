@@ -14,6 +14,8 @@ import { RoomManager } from '@/components/room-manager';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 
+import { getHomeMilestone, homeHeroPalette } from './home-presentation';
+
 export default function HomeScreen() {
   const { state, isLoading, lookups, startFresh } = useMoving();
   const [roomManagerVisible, setRoomManagerVisible] = useState(false);
@@ -85,7 +87,7 @@ export default function HomeScreen() {
 
       <Card style={styles.heroCard}>
         <View style={styles.progressHeader}>
-          <View>
+          <View style={styles.progressCopy}>
             <Text style={styles.progressLabel}>到达新家进度</Text>
             <Text style={styles.progressValue}>{summary.progress}%</Text>
           </View>
@@ -99,14 +101,16 @@ export default function HomeScreen() {
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${summary.progress}%` }]} />
         </View>
-        <View style={styles.metricRow}>
-          <Metric value={summary.total} label="计划带走" />
-          <Metric value={summary.packed} label="已经装箱" />
-          <Metric value={summary.settled} label="完成安置" />
+        <View style={styles.metricTray}>
+          <View style={styles.metricRow}>
+            <Metric value={summary.total} label="计划带走" />
+            <Metric value={summary.packed} label="已经装箱" />
+            <Metric value={summary.settled} label="完成安置" />
+          </View>
         </View>
       </Card>
 
-      {summary.unboxed > 0 ? (
+      {getHomeMilestone(summary.unboxed) ? (
         <Card style={styles.alertCard}>
           <View style={styles.alertIcon}>
             <Text style={styles.alertEmoji}>!</Text>
@@ -204,14 +208,16 @@ const styles = StyleSheet.create({
   heroCard: {
     backgroundColor: AppColors.primary,
     borderColor: AppColors.primary,
+    borderRadius: AppRadius.page,
     padding: AppSpacing.xl,
-    gap: AppSpacing.lg,
+    gap: AppSpacing.xl,
   },
   demoCard: {
-    gap: AppSpacing.md,
+    gap: AppSpacing.lg,
+    padding: AppSpacing.lg,
   },
   demoText: {
-    gap: 3,
+    gap: AppSpacing.xs,
   },
   demoTitle: {
     color: AppColors.text,
@@ -226,27 +232,35 @@ const styles = StyleSheet.create({
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: AppSpacing.lg,
+  },
+  progressCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   progressLabel: {
-    color: '#D8E8DE',
+    color: AppColors.primarySoft,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   progressValue: {
     color: AppColors.white,
-    fontSize: 48,
+    fontSize: 56,
     fontWeight: '900',
-    letterSpacing: -1.5,
+    letterSpacing: -2,
+    lineHeight: 64,
   },
   progressCircle: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    borderWidth: 6,
-    borderColor: 'rgba(255,255,255,0.28)',
+    width: 84,
+    minHeight: 84,
+    borderRadius: 42,
+    borderWidth: 5,
+    borderColor: AppColors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: AppSpacing.xs,
+    flexShrink: 0,
   },
   progressCircleValue: {
     color: AppColors.white,
@@ -254,26 +268,40 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   progressCircleLabel: {
-    color: '#D8E8DE',
+    color: homeHeroPalette.circleLabel,
     fontSize: 10,
     marginTop: 1,
   },
   progressTrack: {
-    height: 8,
+    height: 20,
     borderRadius: AppRadius.pill,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 3,
+    borderColor: 'rgba(23,36,58,0.18)',
+    backgroundColor: 'rgba(23,36,58,0.24)',
+    padding: 2,
   },
   progressFill: {
     height: '100%',
     borderRadius: AppRadius.pill,
-    backgroundColor: '#F0B17E',
+    backgroundColor: AppColors.primarySoft,
+  },
+  metricTray: {
+    paddingVertical: AppSpacing.md,
+    paddingHorizontal: AppSpacing.lg,
+    borderRadius: AppRadius.control,
+    backgroundColor: 'rgba(23,36,58,0.24)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.24)',
   },
   metricRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: AppSpacing.md,
   },
   metric: {
     flex: 1,
+    flexBasis: 72,
     gap: 2,
   },
   metricValue: {
@@ -282,26 +310,29 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   metricLabel: {
-    color: '#D8E8DE',
+    color: AppColors.primarySoft,
     fontSize: 11,
   },
   alertCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: AppSpacing.md,
-    backgroundColor: AppColors.accentSoft,
-    borderColor: '#EEC9B2',
+    backgroundColor: AppColors.surface,
+    borderColor: AppColors.border,
   },
   alertIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: AppColors.accent,
+    borderWidth: 1,
+    borderColor: AppColors.text,
+    flexShrink: 0,
   },
   alertEmoji: {
-    color: AppColors.white,
+    color: AppColors.text,
     fontWeight: '900',
     fontSize: 17,
   },
@@ -329,12 +360,13 @@ const styles = StyleSheet.create({
   },
   roomCard: {
     width: '47.8%',
-    minHeight: 116,
+    minHeight: 124,
     justifyContent: 'center',
+    paddingVertical: AppSpacing.xl,
   },
   roomDot: {
-    width: 28,
-    height: 7,
+    width: 30,
+    height: 6,
     borderRadius: AppRadius.pill,
     marginBottom: AppSpacing.md,
   },
@@ -355,14 +387,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: AppSpacing.md,
+    minHeight: 76,
   },
   boxIcon: {
     width: 44,
     height: 44,
-    borderRadius: AppRadius.md,
+    borderRadius: AppRadius.control,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: AppColors.surfaceMuted,
+    backgroundColor: AppColors.primarySoft,
+    borderWidth: 1,
+    borderColor: AppColors.primary,
+    flexShrink: 0,
   },
   boxEmoji: {
     color: AppColors.primary,
@@ -371,6 +407,7 @@ const styles = StyleSheet.create({
   },
   boxText: {
     flex: 1,
+    minWidth: 0,
     gap: 1,
   },
   boxCode: {

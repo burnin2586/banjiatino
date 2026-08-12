@@ -149,15 +149,21 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
-        <Text onPress={() => navigation.goBack()} style={styles.back}>
-          ‹ 返回
-        </Text>
-        <Text numberOfLines={1} style={styles.title}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => navigation.goBack()}
+          style={styles.headerControl}>
+          <Text style={styles.back}>‹ 返回</Text>
+        </Pressable>
+        <Text numberOfLines={2} style={styles.title}>
           {currentPhoto.title || '收纳照片'}
         </Text>
-        <Text onPress={confirmDeletePhoto} style={styles.danger}>
-          删除
-        </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={confirmDeletePhoto}
+          style={styles.headerControl}>
+          <Text style={styles.danger}>删除</Text>
+        </Pressable>
       </View>
 
       <View style={styles.modeRow}>
@@ -282,6 +288,7 @@ function ItemEditor({
         <Pressable
           accessibilityLabel="减少数量"
           hitSlop={6}
+          style={styles.quantityButtonTarget}
           onPress={() => changeQuantity(item.quantity - 1)}>
           <Text style={styles.quantityButton}>−</Text>
         </Pressable>
@@ -289,6 +296,7 @@ function ItemEditor({
         <Pressable
           accessibilityLabel="增加数量"
           hitSlop={6}
+          style={styles.quantityButtonTarget}
           onPress={() => changeQuantity(item.quantity + 1)}>
           <Text style={styles.quantityButton}>＋</Text>
         </Pressable>
@@ -409,6 +417,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: AppColors.border,
   },
+  headerControl: { minWidth: 44, minHeight: 44, justifyContent: 'center' },
   back: { color: AppColors.primary, fontSize: 16, fontWeight: '700' },
   title: { flex: 1, marginHorizontal: AppSpacing.md, color: AppColors.text, fontSize: 16, fontWeight: '800', textAlign: 'center' },
   danger: { color: AppColors.danger, fontSize: 15, fontWeight: '700' },
@@ -419,6 +428,8 @@ const styles = StyleSheet.create({
     paddingVertical: AppSpacing.sm,
   },
   modeChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: 999,
@@ -435,7 +446,7 @@ const styles = StyleSheet.create({
   label: { color: AppColors.textMuted, fontSize: 12, fontWeight: '700' },
   input: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 44,
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: AppRadius.md,
@@ -449,13 +460,19 @@ const styles = StyleSheet.create({
   itemRow: { flexDirection: 'row', alignItems: 'center', gap: AppSpacing.sm },
   itemInput: {
     flex: 1,
-    minHeight: 38,
+    minHeight: 44,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: AppColors.border,
     color: AppColors.text,
     fontSize: 15,
   },
   quantityControl: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  quantityButtonTarget: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   quantityButton: { color: AppColors.primary, fontSize: 20, fontWeight: '700' },
   quantityValue: { minWidth: 18, color: AppColors.text, fontSize: 14, textAlign: 'center' },
   addItemRow: { flexDirection: 'row', alignItems: 'center', gap: AppSpacing.sm },

@@ -1,18 +1,36 @@
 export const AppColors = {
-  background: '#F6F4EF',
+  background: '#F3F9FF',
   surface: '#FFFFFF',
-  surfaceMuted: '#ECE9E1',
-  primary: '#2F6B4F',
-  primarySoft: '#DDEAE2',
-  accent: '#D97A47',
-  accentSoft: '#F6E5DA',
-  text: '#17201B',
-  textMuted: '#68736C',
-  border: '#DEDCD5',
-  success: '#287A52',
-  warning: '#B36A2E',
-  danger: '#B94A48',
+  surfaceMuted: '#F3F9FF',
+  primary: '#176BDB',
+  primaryBright: '#2F80ED',
+  primarySoft: '#BFDFFF',
+  accent: '#FFC928',
+  accentSoft: '#FFF3BD',
+  text: '#17243A',
+  textMuted: '#53657D',
+  border: '#D8E8F7',
+  success: '#176BDB',
+  warning: '#17243A',
+  danger: '#A12F2F',
   white: '#FFFFFF',
+} as const;
+
+export const AppShadow = {
+  ceramic: {
+    shadowColor: '#176BDB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  raised: {
+    shadowColor: '#176BDB',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
 } as const;
 
 export const AppSpacing = {
@@ -29,4 +47,21 @@ export const AppRadius = {
   md: 16,
   lg: 22,
   pill: 999,
+  page: 24,
+  card: 18,
+  control: 14,
+  label: 10,
+} as const;
+
+export const AppTypography = {
+  pageTitle: { fontSize: 32, fontWeight: '800' },
+  title: { fontSize: 20, fontWeight: '800' },
+  body: { fontSize: 16, fontWeight: '400' },
+  label: { fontSize: 14, fontWeight: '700' },
+  caption: { fontSize: 12, fontWeight: '600' },
+} as const;
+
+export const AppMotion = {
+  press: 120,
+  standard: 180,
 } as const;

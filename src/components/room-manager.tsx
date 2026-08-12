@@ -186,9 +186,9 @@ const styles = StyleSheet.create({
   },
   colorRow: { flexDirection: 'row', flexWrap: 'wrap', gap: AppSpacing.sm },
   colorChoice: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

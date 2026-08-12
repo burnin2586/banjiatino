@@ -70,10 +70,10 @@ export default function RoomsScreen({ route, navigation }: Props) {
           <View style={styles.list}>
             {rooms.map((r) => (
               <Card key={r.id} style={styles.roomCard}>
-                <Pressable style={{ flex: 1 }} onPress={() => navigation.navigate('RoomEditor', { roomId: r.id })}>
+                <Pressable style={styles.roomLink} onPress={() => navigation.navigate('RoomEditor', { roomId: r.id })}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: AppSpacing.md }}>
                     <View style={{ width: 10, height: 34, borderRadius: 999, backgroundColor: r.color }} />
-                    <View style={{ gap: 2 }}>
+                    <View style={styles.roomIdentity}>
                       <Text style={{ color: AppColors.text, fontSize: 16, fontWeight: '700' }}>{r.name}</Text>
                       <Text style={{ color: AppColors.textMuted, fontSize: 12 }}>
                         {r.walls.length} 段墙 · {r.photos.length} 张照片
@@ -100,7 +100,13 @@ export default function RoomsScreen({ route, navigation }: Props) {
           <Text style={styles.label}>主色</Text>
           <View style={styles.colorRow}>
             {ROOM_COLORS.map((c) => (
-              <Pressable key={c} onPress={() => setColor(c)} style={[styles.colorDot, { backgroundColor: c, borderColor: color === c ? AppColors.primary : 'transparent' }]} />
+              <Pressable
+                accessibilityLabel={`选择颜色 ${c}`}
+                accessibilityRole="button"
+                key={c}
+                onPress={() => setColor(c)}
+                style={[styles.colorDot, { backgroundColor: c, borderColor: color === c ? AppColors.primary : 'transparent' }]}
+              />
             ))}
           </View>
         </View>
@@ -113,9 +119,11 @@ export default function RoomsScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   list: { gap: AppSpacing.md },
   roomCard: { padding: AppSpacing.md, flexDirection: 'row', alignItems: 'center', gap: AppSpacing.sm },
+  roomLink: { flex: 1, minHeight: 44, justifyContent: 'center' },
+  roomIdentity: { flex: 1, gap: 2 },
   field: { gap: AppSpacing.sm },
   label: { color: AppColors.text, fontSize: 14, fontWeight: '700' },
   input: { minHeight: 48, borderWidth: 1, borderColor: AppColors.border, borderRadius: 12, backgroundColor: AppColors.surface, paddingHorizontal: 12, fontSize: 16 },
   colorRow: { flexDirection: 'row', gap: AppSpacing.sm },
-  colorDot: { width: 36, height: 36, borderRadius: 18, borderWidth: 2 },
+  colorDot: { width: 44, height: 44, borderRadius: 22, borderWidth: 2 },
 });

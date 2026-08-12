@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -69,9 +69,16 @@ export default function RoomEditorScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: AppColors.background }}>
       <View style={styles.header}>
-        <Text onPress={() => navigation.goBack()} style={styles.back}>‹ 返回</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => navigation.goBack()}
+          style={styles.headerControl}>
+          <Text style={styles.back}>‹ 返回</Text>
+        </Pressable>
         <Text style={styles.title}>{room.name}</Text>
-        <Text onPress={openNote} style={styles.noteBtn}>备注</Text>
+        <Pressable accessibilityRole="button" onPress={openNote} style={styles.headerControl}>
+          <Text style={styles.noteBtn}>备注</Text>
+        </Pressable>
       </View>
 
       <View style={{ flex: 1, padding: AppSpacing.lg }}>
@@ -100,8 +107,9 @@ export default function RoomEditorScreen({ route, navigation }: Props) {
               onChangeText={setCaption}
             />
             <PrimaryButton label="保存回忆" onPress={saveCaption} />
-            <Text
-              style={styles.deleteText}
+            <Pressable
+              accessibilityRole="button"
+              style={styles.deleteControl}
               onPress={() =>
                 Alert.alert('删除这张照片？', undefined, [
                   { text: '取消', style: 'cancel' },
@@ -115,10 +123,9 @@ export default function RoomEditorScreen({ route, navigation }: Props) {
                     },
                   },
                 ])
-              }
-            >
-              删除这张照片
-            </Text>
+              }>
+              <Text style={styles.deleteText}>删除这张照片</Text>
+            </Pressable>
           </View>
         ) : null}
       </ModalSheet>
@@ -151,8 +158,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: AppColors.border,
   },
+  headerControl: { minHeight: 44, minWidth: 44, justifyContent: 'center' },
   back: { color: AppColors.primary, fontSize: 16, fontWeight: '700' },
-  title: { color: AppColors.text, fontSize: 17, fontWeight: '800' },
+  title: {
+    flex: 1,
+    marginHorizontal: AppSpacing.sm,
+    color: AppColors.text,
+    fontSize: 17,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
   noteBtn: { color: AppColors.primary, fontSize: 15, fontWeight: '700' },
   label: { color: AppColors.text, fontSize: 14, fontWeight: '700' },
   input: {
@@ -166,5 +181,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   notePreview: { color: AppColors.textMuted, fontSize: 13, lineHeight: 19, marginTop: AppSpacing.md },
-  deleteText: { color: '#B4483D', fontSize: 14, fontWeight: '700', textAlign: 'center' },
+  deleteControl: { minHeight: 44, justifyContent: 'center' },
+  deleteText: { color: AppColors.danger, fontSize: 14, fontWeight: '700', textAlign: 'center' },
 });

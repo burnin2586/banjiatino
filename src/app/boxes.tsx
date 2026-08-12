@@ -21,8 +21,12 @@ import {
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import { saveStoragePhoto } from '@/logic/photo-store';
+// The Babel ESLint parser does not count type-only references as usage.
+// eslint-disable-next-line no-unused-vars
 import { BOX_STATUSES, type MovingBox } from '@/types/moving';
 import type { RootStackParamList } from '@/navigation/types';
+
+import { getMilestoneBoxId } from './boxes-presentation';
 
 export default function BoxesScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -51,6 +55,10 @@ export default function BoxesScreen() {
   const sortedBoxes = useMemo(
     () => [...state.boxes].sort((a, b) => b.updatedAt - a.updatedAt),
     [state.boxes],
+  );
+  const milestoneBoxId = useMemo(
+    () => getMilestoneBoxId(sortedBoxes),
+    [sortedBoxes],
   );
 
   function resetForm() {
@@ -283,6 +291,11 @@ export default function BoxesScreen() {
                             key={status}
                             label={status}
                             selected={box.status === status}
+                            milestone={
+                              box.id === milestoneBoxId &&
+                              box.status === status &&
+                              status === '待整理'
+                            }
                             onPress={() => setBoxStatus(box.id, status)}
                           />
                         ))}
@@ -379,8 +392,8 @@ const styles = StyleSheet.create({
   addPhotoCard: {
     width: 96,
     height: 96,
-    borderRadius: AppRadius.md,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: AppRadius.card,
+    borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: AppColors.primary,
     alignItems: 'center',
@@ -390,7 +403,14 @@ const styles = StyleSheet.create({
   photoCardDisabled: { opacity: 0.55 },
   addPlus: { color: AppColors.primary, fontSize: 28, fontWeight: '400' },
   addLabel: { color: AppColors.primary, fontSize: 11, fontWeight: '700', marginTop: 2 },
-  photoCard: { width: 96, height: 96, borderRadius: AppRadius.md, overflow: 'hidden' },
+  photoCard: {
+    width: 96,
+    height: 96,
+    borderRadius: AppRadius.card,
+    borderWidth: 1,
+    borderColor: AppColors.border,
+    overflow: 'hidden',
+  },
   photoThumb: { width: '100%', height: '100%' },
   list: { gap: AppSpacing.md },
   boxHeader: {

@@ -38,3 +38,5 @@ example
 /ios/.xcode.env.local
 /ios/**/*.xcuserstate
 /ios/**/xcuserdata/
+/.superdesign/tmp/
+/.xcodebuildmcp-derived/

@@ -14,7 +14,58 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import {
+  AppColors,
+  AppRadius,
+  AppShadow,
+  AppSpacing,
+} from '@/constants/app-theme';
+
+export function getChoiceChipPalette(selected: boolean, milestone: boolean) {
+  if (!selected) {
+    return { background: AppColors.surface, text: AppColors.textMuted };
+  }
+
+  return milestone
+    ? { background: AppColors.accent, text: AppColors.text }
+    : { background: AppColors.primary, text: AppColors.white };
+}
+
+export function getChoiceChipLabel(label: string, selected: boolean) {
+  return selected ? `✓ ${label}` : label;
+}
+
+export function getPressDepth(pressed: boolean) {
+  return [{ translateY: pressed ? 2 : 0 }];
+}
+
+export function getPlasticShadow(pressed: boolean) {
+  if (!pressed) {
+    return AppShadow.raised;
+  }
+
+  return {
+    ...AppShadow.raised,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  };
+}
+
+type StatusBadgeTone = 'neutral' | 'success' | 'warning' | 'accent';
+
+export function getStatusBadgePalette(tone: StatusBadgeTone) {
+  switch (tone) {
+    case 'warning':
+      return { background: AppColors.primarySoft, text: AppColors.text };
+    case 'accent':
+      return { background: AppColors.surface, text: AppColors.primary };
+    case 'neutral':
+    case 'success':
+      return { background: AppColors.primary, text: AppColors.white };
+  }
+}
 
 export function Screen({
   children,
@@ -65,7 +116,7 @@ export function PageHeader({
         <Text style={styles.pageTitle}>{title}</Text>
         {description ? <Text style={styles.description}>{description}</Text> : null}
       </View>
-      {action}
+      {action ? <View style={styles.headerAction}>{action}</View> : null}
     </View>
   );
 }
@@ -112,7 +163,10 @@ export function PrimaryButton({
         styles.primaryButton,
         compact && styles.primaryButtonCompact,
         disabled && styles.buttonDisabled,
-        pressed && !disabled && styles.pressed,
+        {
+          ...getPlasticShadow(pressed && !disabled),
+          transform: getPressDepth(pressed && !disabled),
+        },
       ]}>
       <Text style={styles.primaryButtonText}>{label}</Text>
     </Pressable>
@@ -146,7 +200,13 @@ export function AddButton({ label, onPress }: { label: string; onPress: () => vo
       accessibilityLabel={label}
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+      style={({ pressed }) => [
+        styles.addButton,
+        {
+          ...getPlasticShadow(pressed),
+          transform: getPressDepth(pressed),
+        },
+      ]}>
       <Text style={styles.addButtonIcon}>＋</Text>
     </Pressable>
   );
@@ -157,23 +217,13 @@ export function StatusBadge({
   tone = 'neutral',
 }: {
   label: string;
-  tone?: 'neutral' | 'success' | 'warning' | 'accent';
+  tone?: StatusBadgeTone;
 }) {
+  const palette = getStatusBadgePalette(tone);
+
   return (
-    <View
-      style={[
-        styles.badge,
-        tone === 'success' && styles.badgeSuccess,
-        tone === 'warning' && styles.badgeWarning,
-        tone === 'accent' && styles.badgeAccent,
-      ]}>
-      <Text
-        style={[
-          styles.badgeText,
-          tone === 'success' && styles.badgeSuccessText,
-          tone === 'warning' && styles.badgeWarningText,
-          tone === 'accent' && styles.badgeAccentText,
-        ]}>
+    <View style={[styles.badge, { backgroundColor: palette.background }]}>
+      <Text style={[styles.badgeText, { color: palette.text }]}>
         {label}
       </Text>
     </View>
@@ -184,20 +234,29 @@ export function ChoiceChip({
   label,
   selected,
   onPress,
+  milestone = false,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
+  milestone?: boolean;
 }) {
+  const palette = getChoiceChipPalette(selected, milestone);
+
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => [
         styles.chip,
         selected && styles.chipSelected,
+        { backgroundColor: palette.background },
         pressed && styles.pressed,
       ]}>
-      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+      <Text style={[styles.chipText, { color: palette.text }]}>
+        {getChoiceChipLabel(label, selected)}
+      </Text>
     </Pressable>
   );
 }
@@ -242,7 +301,11 @@ export function ModalSheet({
         <SafeAreaView style={styles.modalRoot}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{title}</Text>
-            <Pressable onPress={onClose} hitSlop={12}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              hitSlop={12}
+              style={styles.closeButtonTarget}>
               <Text style={styles.closeButton}>完成</Text>
             </Pressable>
           </View>
@@ -264,7 +327,7 @@ const styles = StyleSheet.create({
   },
   screenContent: {
     flexGrow: 1,
-    paddingHorizontal: AppSpacing.lg,
+    paddingHorizontal: 20,
     paddingTop: AppSpacing.md,
     paddingBottom: 120,
     gap: AppSpacing.xl,
@@ -287,7 +350,12 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
     gap: AppSpacing.xs,
+  },
+  headerAction: {
+    flexShrink: 0,
   },
   eyebrow: {
     color: AppColors.primary,
@@ -323,24 +391,29 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: AppColors.surface,
-    borderRadius: AppRadius.md,
+    borderRadius: AppRadius.card,
     borderCurve: 'continuous',
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 1,
     borderColor: AppColors.border,
     padding: AppSpacing.lg,
+    ...AppShadow.ceramic,
   },
   primaryButton: {
     minHeight: 50,
-    borderRadius: AppRadius.md,
+    borderRadius: AppRadius.control,
     borderCurve: 'continuous',
+    borderWidth: 1,
+    borderColor: AppColors.primaryBright,
+    borderTopColor: AppColors.white,
     backgroundColor: AppColors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: AppSpacing.lg,
+    ...AppShadow.raised,
   },
   primaryButtonCompact: {
-    minHeight: 36,
-    borderRadius: AppRadius.sm,
+    minHeight: 44,
+    borderRadius: AppRadius.control,
     paddingHorizontal: AppSpacing.md,
   },
   primaryButtonText: {
@@ -349,7 +422,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   textButton: {
-    minHeight: 36,
+    minHeight: 44,
     justifyContent: 'center',
     paddingHorizontal: AppSpacing.sm,
   },
@@ -359,7 +432,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   textButtonDanger: {
-    color: '#B4483D',
+    color: AppColors.danger,
   },
   buttonDisabled: {
     opacity: 0.38,
@@ -368,9 +441,13 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
+    borderWidth: 1,
+    borderColor: AppColors.primaryBright,
+    borderTopColor: AppColors.white,
     backgroundColor: AppColors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    ...AppShadow.raised,
   },
   addButtonIcon: {
     color: AppColors.white,
@@ -384,55 +461,37 @@ const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
     borderRadius: AppRadius.pill,
-    backgroundColor: AppColors.surfaceMuted,
+    backgroundColor: AppColors.primary,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   badgeText: {
-    color: AppColors.textMuted,
+    color: AppColors.white,
     fontSize: 12,
     fontWeight: '700',
   },
-  badgeSuccess: {
-    backgroundColor: AppColors.primarySoft,
-  },
-  badgeSuccessText: {
-    color: AppColors.success,
-  },
-  badgeWarning: {
-    backgroundColor: '#F8E9D6',
-  },
-  badgeWarningText: {
-    color: AppColors.warning,
-  },
-  badgeAccent: {
-    backgroundColor: AppColors.accentSoft,
-  },
-  badgeAccentText: {
-    color: AppColors.accent,
-  },
   chip: {
+    minHeight: 44,
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: AppRadius.pill,
     backgroundColor: AppColors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: AppSpacing.md,
-    paddingVertical: 9,
+    paddingVertical: AppSpacing.sm,
   },
   chipSelected: {
     borderColor: AppColors.primary,
-    backgroundColor: AppColors.primarySoft,
   },
   chipText: {
     color: AppColors.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
-  chipTextSelected: {
-    color: AppColors.primary,
-  },
   emptyState: {
     alignItems: 'center',
+    alignSelf: 'stretch',
     paddingVertical: AppSpacing.xxl,
     gap: AppSpacing.sm,
   },
@@ -440,11 +499,14 @@ const styles = StyleSheet.create({
     fontSize: 34,
   },
   emptyTitle: {
+    alignSelf: 'stretch',
     color: AppColors.text,
     fontSize: 17,
     fontWeight: '700',
+    textAlign: 'center',
   },
   emptyDescription: {
+    alignSelf: 'stretch',
     color: AppColors.textMuted,
     fontSize: 14,
     lineHeight: 20,
@@ -472,6 +534,12 @@ const styles = StyleSheet.create({
     color: AppColors.primary,
     fontSize: 16,
     fontWeight: '700',
+  },
+  closeButtonTarget: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalContent: {
     padding: AppSpacing.lg,

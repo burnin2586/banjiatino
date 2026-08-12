@@ -216,10 +216,10 @@ const styles = StyleSheet.create({
   },
   auditCard: {
     backgroundColor: AppColors.primarySoft,
-    borderColor: '#C5DCCC',
+    borderColor: AppColors.border,
   },
   auditEyebrow: {
-    color: AppColors.primary,
+    color: AppColors.text,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.6,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     borderLeftColor: AppColors.primary,
   },
   answerWarning: {
-    backgroundColor: '#F8E9D6',
+    backgroundColor: AppColors.accentSoft,
     borderLeftColor: AppColors.warning,
   },
   answerLabel: {

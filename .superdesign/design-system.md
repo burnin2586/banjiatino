@@ -1,0 +1,200 @@
+# Banjiatino 蓝白立体玩具风设计系统
+
+## Product context and authority
+
+Banjiatino is a React Native iOS app for managing a move and preserving memories of previous homes. This document adapts the complete approved specification below into Superdesign-ready context. It is the target visual authority; `.superdesign/init/theme.md` only records the current pre-redesign implementation tokens. Do not change existing functions, navigation structure, or data models during this design phase.
+
+## Exact navigation contract
+
+- Root stack: `MainTabs`, `Rooms({ houseId })`, `RoomEditor({ roomId })`, `StoragePhoto({ photoId })`.
+- Five-tab shell, in exact order: `Home / 进度`, `Items / 物品`, `Boxes / 箱子`, `Search / 查找`, `Memory / 回忆`.
+- Detail screens keep the current system navigation behavior; do not introduce new top-level destinations or reorder the five tabs.
+
+## Exact target token quick reference
+
+- Main palette: `#176BDB`, `#2F80ED`, `#BFDFFF`, `#F3F9FF`, `#FFFFFF`.
+- Yellow: `#FFC928`, `#FFF3BD`; its visible area must remain below `10%` per page.
+- Ink and line: `#17243A`, `#53657D`, `#D8E8F7`.
+- Radius: page `24pt`, card `18pt`, control `14pt`, small label `10pt`.
+- Minimum touch target: `44×44pt`.
+- Lighting: unified top-left / 左上 light source, soft upper-edge highlight, short soft lower shadow.
+- Materials: smooth plastic, white ceramic, semi-matte rubber.
+
+## Component and state rules
+
+- Interactive controls are raised; information containers are slightly raised; read-only states and input/search slots are inset.
+- Primary action uses blue plastic with a narrow top highlight and deep-blue lower thickness. Pressed state moves down `2pt` while the shadow shortens.
+- Yellow is reserved for the single key completion action or a small milestone highlight, never a broad background.
+- Cards use white ceramic or pale-blue plastic trays. Interactive/draggable cards receive clearer edging and elevation than informational cards.
+- Progress uses an inset toy rail or instrument slot, not a flat color bar.
+- Status tags resemble inset plastic nameplates. Default states remain blue/white; success, warning, danger, and deletion retain clear semantic colors plus text or icons.
+- Bottom navigation is a rounded white base; the selected destination looks like an illuminated blue physical button.
+
+## Prohibited styles
+
+Do not use kraft paper, old leather, yellowed photos, heavy wood grain, dirty texture, retro filters, Liquid Glass as the main material, joke-led or cold-humor copy, cartoon characters, celebrity likeness, direct Apple UI reproduction, or recording-hardware/audio-capture imagery as a visual motif.
+
+## Complete approved specification
+
+# Banjiatino 蓝白立体玩具风设计规范
+
+## 1. 设计目标
+
+将 Banjiatino 设计成一个明亮、轻松、具有真实触感的搬家与居住回忆 App。视觉需要保留约 15 年前消费软件中清晰、可触摸的拟物层次，但不复制具体 Apple 界面，也不使用陈旧、泛黄或低明度的怀旧表达。
+
+本轮只定义品牌与 UI 视觉方向，不改变现有功能、导航结构和数据模型。
+
+## 2. 品牌性格
+
+- 明亮、可靠、轻松
+- 像精致的成人收藏玩具，而不是儿童教育产品
+- 趣味来自形状、材质和动效，不依赖段子或冷幽默文案
+- 搬家代表行动与整理，旧居回忆代表温度与珍藏
+
+## 3. 核心视觉概念
+
+### 会微笑的搬家箱
+
+Logo 主体是一个圆润的蓝色搬家箱：
+
+- 白色箱盖形成简化的屋顶轮廓
+- 黄色封箱带形成克制的微笑弧线
+- 不使用人物、演员肖像或卡通五官
+- 在 32pt 尺寸下仍能辨认出“箱子、屋顶、微笑”三个特征
+
+App Icon 使用蓝色圆角背景、白色主体和一处黄色重点。避免细线、复杂文字和大面积渐变噪点。
+
+## 4. 色彩系统
+
+### 主色
+
+- `Primary Blue 600`：`#176BDB`，主按钮、选中状态、核心图形
+- `Primary Blue 500`：`#2F80ED`，常规强调与图标
+- `Sky Blue 200`：`#BFDFFF`，次级面板与进度背景
+- `Ice Blue 50`：`#F3F9FF`，页面背景
+- `Pure White`：`#FFFFFF`，卡片与高光面
+
+### 重点色
+
+- `Signal Yellow 500`：`#FFC928`，主要完成状态、关键操作提示、Logo 微笑
+- `Signal Yellow 100`：`#FFF3BD`，轻量提示背景
+
+### 中性色
+
+- `Ink 900`：`#17243A`，主要文字
+- `Ink 600`：`#53657D`，次要文字
+- `Line Blue 100`：`#D8E8F7`，边界与分隔
+
+黄色占单个页面可见面积不超过 10%，不作为大面积背景。危险、错误和删除继续使用语义红色，不能用黄色替代。
+
+## 5. 材质与光照
+
+- 主要材质：光滑塑料、白色陶瓷、半哑光橡胶
+- 光源统一来自左上方，组件上沿有柔和高光，下方有短而柔软的阴影
+- 可操作组件浮起，信息容器轻微浮起，只读状态和输入槽向内凹陷
+- 禁止牛皮纸、旧皮革、泛黄照片、重木纹、脏污颗粒和复古滤镜
+- 玻璃材质只用于小面积高光，不把整体做成 Liquid Glass
+
+## 6. 形状与空间
+
+- 页面大圆角：24pt
+- 卡片圆角：18pt
+- 控件圆角：14pt
+- 小标签圆角：10pt
+- 最小触控区域：44×44pt
+- 页面保持充足白色与冰蓝留白，不堆叠过多装饰
+- 图标采用粗轮廓、圆角端点和立体双色填充
+
+## 7. 组件语言
+
+### 主按钮
+
+蓝色塑料按键，顶部有窄高光，底部有深蓝厚度。按下时下移 2pt、阴影收短。黄色只用于当前流程中唯一的关键完成动作。
+
+### 卡片
+
+白色陶瓷或浅蓝塑料托盘。信息卡使用低浮起层级；可拖动或可进入详情的卡片使用更明显的边缘和阴影。
+
+### 进度
+
+使用玩具滑轨或嵌入式仪表槽表达，不使用纯平色条。已完成部分为蓝色，关键里程碑使用小面积黄色。
+
+### 状态标签
+
+像嵌入卡片的塑料铭牌。默认蓝白体系；成功、警告、危险保持明确语义色。
+
+### 底部导航
+
+白色圆润底座，选中项像被按亮的蓝色实体按钮。保留现有五个入口：进度、物品、箱子、查找、回忆。
+
+## 8. 页面方向
+
+### 进度首页
+
+- 顶部展示当前搬家阶段和整体进度
+- 中部使用大型立体进度滑轨
+- 待办事项放入白色模块化托盘
+- 页面以蓝白为主，黄色只标记当前最重要的一步
+- 文案直接、友好，不加入冷幽默
+
+### 物品页
+
+- 物品卡像排列整齐的小型收纳模块
+- 箱号、房间和状态有清晰层级
+- 批量操作与新增入口保持实体按钮反馈
+
+### 箱子页
+
+- 箱子不再表现为棕色纸箱，而是蓝白色模块化搬运箱
+- 每个箱子有大号编号、起点、终点和状态
+- 图片入口像相机模块嵌在卡片中
+
+### 查找页
+
+- 搜索框是浅蓝内凹槽
+- 搜索结果沿用物品与箱子组件，不创造第三套卡片样式
+
+### 回忆页
+
+- 房子与房间照片装入蓝白立体相框
+- 使用干净的相册托盘和时间标签，不使用泛黄照片或旧相册材质
+- 房屋平面图以浅蓝底、深蓝线和黄色当前点位呈现
+
+## 9. 动效与反馈
+
+- 按钮按下：100–140ms，轻微缩短阴影并下移
+- 卡片进入：180–220ms，淡入并上移 6pt
+- 完成状态：进度滑轨平滑推进，黄色里程碑短暂发亮
+- 页面转场保持系统导航习惯，不加入夸张弹跳
+- 支持 Reduce Motion；关闭动效时状态变化仍清晰可见
+
+## 10. 可访问性
+
+- 正文与背景对比度至少满足 WCAG AA
+- 不只依靠颜色表达状态，必须同时使用文字或图标
+- 重要文字不叠加在复杂高光或纹理上
+- Dynamic Type 放大后允许卡片增高，不截断关键字段
+- 所有交互组件保持至少 44pt 触控尺寸
+
+## 11. Superdesign 交付范围
+
+第一轮画布包含：
+
+1. Logo 与 App Icon 主方案
+2. 色板、材质、阴影和基础控件样例
+3. 进度首页高保真设计
+4. 箱子列表高保真设计
+5. 回忆首页高保真设计
+6. 三个页面共用的底部导航与组件状态
+
+本轮不生成全部边缘状态、不改代码、不替换 Xcode App Icon。用户确认视觉稿后，再规划 React Native 落地和正式资产导出。
+
+## 12. 验收标准
+
+- 第一眼感受是明亮蓝白，而不是复古泛黄
+- 立体感明确，但不影响信息密度与可读性
+- 黄色只出现在重点位置
+- Logo 在小尺寸下仍可识别
+- 三个页面属于同一套组件和光照系统
+- 不出现冷幽默文案、儿童化卡通角色或具体 Apple 界面复刻
+

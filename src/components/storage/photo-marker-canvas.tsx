@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 2,
     borderColor: AppColors.primary,
-    backgroundColor: 'rgba(47,107,79,0.12)',
+    backgroundColor: `${AppColors.primary}1F`,
     borderRadius: 4,
     padding: 2,
     justifyContent: 'flex-end',
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: AppColors.accent,
-    backgroundColor: 'rgba(217,122,71,0.12)',
+    backgroundColor: `${AppColors.accent}1F`,
   },
   hint: { alignSelf: 'stretch', color: AppColors.textMuted, fontSize: 12 },
 });

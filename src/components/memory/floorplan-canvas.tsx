@@ -225,6 +225,8 @@ const styles = StyleSheet.create({
   emptySub: { color: AppColors.textMuted, fontSize: 12 },
   wallList: { flexDirection: 'row', flexWrap: 'wrap', gap: AppSpacing.sm },
   wallChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: 999,
@@ -234,6 +236,8 @@ const styles = StyleSheet.create({
   },
   wallChipText: { color: AppColors.primary, fontSize: 12, fontWeight: '700' },
   modeChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: AppColors.border,
     borderRadius: 999,
