@@ -406,7 +406,9 @@ export function MovingProvider({ children }: PropsWithChildren) {
 
   const startFresh = useCallback(() => {
     updateState((previous) => ({
-      schemaVersion: 3,
+      schemaVersion: 4,
+      movingDate: null,
+      tasks: [],
       rooms: previous.rooms,
       boxes: [],
       items: [],

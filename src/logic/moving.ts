@@ -5,6 +5,7 @@ import type {
   MovingBox,
   MovingItem,
   MovingState,
+  MovingTask,
   Room,
 } from '@/types/moving';
 
@@ -127,5 +128,28 @@ export function migrateStoredState(value: unknown): MovingState {
   const storagePhotos = Array.isArray((stored as any).storagePhotos)
     ? (stored as any).storagePhotos
     : [];
-  return { schemaVersion: 3, rooms, boxes, items, storagePhotos };
+  const raw = stored as { movingDate?: unknown; tasks?: unknown };
+  const movingDate =
+    typeof raw.movingDate === 'number' ? raw.movingDate : null;
+  const tasks: MovingTask[] = Array.isArray(raw.tasks)
+    ? raw.tasks
+        .filter((t): t is MovingTask => {
+          return (
+            !!t && typeof t === 'object' &&
+            typeof (t as MovingTask).id === 'string' &&
+            typeof (t as MovingTask).title === 'string' &&
+            typeof (t as MovingTask).dueOffsetDays === 'number'
+          );
+        })
+        .map((t) => ({
+          id: t.id,
+          title: t.title.trim(),
+          dueOffsetDays: t.dueOffsetDays,
+          done: !!t.done,
+          note: t.note ?? '',
+          createdAt: t.createdAt ?? now,
+          updatedAt: t.updatedAt ?? t.createdAt ?? now,
+        }))
+    : [];
+  return { schemaVersion: 4, movingDate, tasks, rooms, boxes, items, storagePhotos };
 }

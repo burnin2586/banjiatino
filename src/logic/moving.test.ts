@@ -46,7 +46,7 @@ describe('nextBoxCode', () => {
 
 describe('migrateStoredState', () => {
   it('null 或非对象时回退到示例数据', () => {
-    expect(migrateStoredState(null).schemaVersion).toBe(3);
+    expect(migrateStoredState(null).schemaVersion).toBe(4);
     expect(migrateStoredState(null).storagePhotos).toEqual([]);
     expect(migrateStoredState('hello').rooms.length).toBeGreaterThan(0);
     expect(migrateStoredState(undefined).boxes).toBeDefined();
@@ -54,7 +54,9 @@ describe('migrateStoredState', () => {
 
   it('完整 V2 数据保留房间与箱子结构', () => {
     const state: MovingState = {
-      schemaVersion: 3,
+      schemaVersion: 4,
+      movingDate: null,
+      tasks: [],
       rooms: [
         { id: 'room-a', name: '客厅', color: '#fff', kind: 'source', order: 0 },
         { id: 'dest-a', name: '客厅', color: '#fff', kind: 'destination', order: 0 },
@@ -128,5 +130,34 @@ describe('migrateStoredState', () => {
     };
     const result = migrateStoredState(stored);
     expect(result.items[0].quantity).toBe(1);
+  });
+
+  it('旧数据补 movingDate=null 与空 tasks，schema 升到 4', () => {
+    const stored = {
+      rooms: [{ id: 'room-a', name: '客厅', color: '#fff', kind: 'source', order: 0 }],
+      boxes: [],
+      items: [],
+    };
+    const result = migrateStoredState(stored);
+    expect(result.schemaVersion).toBe(4);
+    expect(result.movingDate).toBeNull();
+    expect(result.tasks).toEqual([]);
+  });
+
+  it('保留已有的 movingDate 与 tasks', () => {
+    const stored = {
+      schemaVersion: 4,
+      movingDate: 1_700_000_000_000,
+      tasks: [
+        { id: 'task-1', title: '约搬家公司', dueOffsetDays: -7, done: false, note: '', createdAt: 1, updatedAt: 2 },
+      ],
+      rooms: [{ id: 'room-a', name: '客厅', color: '#fff', kind: 'source', order: 0 }],
+      boxes: [],
+      items: [],
+    };
+    const result = migrateStoredState(stored);
+    expect(result.movingDate).toBe(1_700_000_000_000);
+    expect(result.tasks).toHaveLength(1);
+    expect(result.tasks[0].title).toBe('约搬家公司');
   });
 });

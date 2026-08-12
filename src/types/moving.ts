@@ -53,8 +53,20 @@ export type StoragePhoto = {
   createdAt: number;
 };
 
+export type MovingTask = {
+  id: string;
+  title: string;
+  dueOffsetDays: number; // 相对搬家日：负=搬家前，0=当天，正=入住后
+  done: boolean;
+  note: string;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type MovingState = {
-  schemaVersion: 3;
+  schemaVersion: 4;
+  movingDate: number | null; // 搬家日 0 点时间戳；null = 未设置
+  tasks: MovingTask[];
   rooms: Room[];
   boxes: MovingBox[];
   items: MovingItem[];
