@@ -1,6 +1,6 @@
 begin;
 
-select plan(37);
+select plan(34);
 
 select has_table('public', 'profiles');
 select has_table('public', 'moving_projects');
@@ -10,9 +10,6 @@ select has_table('public', 'rooms');
 select has_table('public', 'moving_tasks');
 select has_table('public', 'moving_boxes');
 select has_table('public', 'moving_items');
-select has_table('public', 'memory_houses');
-select has_table('public', 'memory_rooms');
-select has_table('public', 'memory_walls');
 select has_table('public', 'applied_operations');
 select has_table('public', 'project_changes');
 

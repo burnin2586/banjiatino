@@ -1,19 +1,13 @@
-import type { MemoryState } from '@/types/memory';
 import type { MovingState } from '@/types/moving';
 
 export const LEGACY_MOVING_STORAGE_KEY = 'banjiatino-moving-state-v1';
-export const LEGACY_MEMORY_STORAGE_KEY = 'banjiatino-memory-state-v1';
 
 export type LegacyImportEntityType =
   | 'room'
   | 'box'
   | 'item'
   | 'task'
-  | 'storage_photo'
-  | 'memory_house'
-  | 'memory_room'
-  | 'memory_wall'
-  | 'memory_photo';
+  | 'storage_photo';
 
 export type LegacyImportEntity = {
   id: string;
@@ -163,7 +157,7 @@ function addEntity(
  * Translates existing AsyncStorage state into a deterministic, side-effect-free import plan.
  * The legacy identifiers are deliberately namespaced so a retry addresses the same local rows.
  */
-export function buildLegacyImportPlan(moving: MovingState, memory: MemoryState): LegacyImportPlan {
+export function buildLegacyImportPlan(moving: MovingState): LegacyImportPlan {
   const entities: LegacyImportEntity[] = [];
 
   for (const room of moving.rooms) {
@@ -234,63 +228,8 @@ export function buildLegacyImportPlan(moving: MovingState, memory: MemoryState):
     });
   }
 
-  for (const house of memory.houses) {
-    addEntity(entities, 'memory_house', house.id, {
-      name: house.name,
-      coverColor: house.coverColor,
-      movedInAt: house.movedInAt ?? null,
-      movedOutAt: house.movedOutAt ?? null,
-      notes: house.note ?? null,
-      order: house.order,
-      createdAt: house.createdAt,
-      updatedAt: house.updatedAt,
-    });
-  }
-
-  for (const room of memory.rooms) {
-    addEntity(
-      entities,
-      'memory_room',
-      room.id,
-      {
-        name: room.name,
-        color: room.color,
-        notes: room.note ?? null,
-        order: room.order,
-        createdAt: room.createdAt,
-        updatedAt: room.updatedAt,
-      },
-      [legacyEntityId('memory_house', room.houseId)],
-    );
-
-    for (const wall of room.walls) {
-      addEntity(
-        entities,
-        'memory_wall',
-        wall.id,
-        { x1: wall.x1, y1: wall.y1, x2: wall.x2, y2: wall.y2 },
-        [legacyEntityId('memory_room', room.id)],
-      );
-    }
-
-    for (const photo of room.photos) {
-      addEntity(
-        entities,
-        'memory_photo',
-        photo.id,
-        {
-          localPath: photo.imageUri,
-          t: photo.t,
-          caption: photo.caption ?? null,
-          createdAt: photo.createdAt,
-        },
-        [legacyEntityId('memory_room', room.id), legacyEntityId('memory_wall', photo.wallId)],
-      );
-    }
-  }
-
   return {
-    sourceStorageVersion: `${LEGACY_MOVING_STORAGE_KEY}@${moving.schemaVersion}|${LEGACY_MEMORY_STORAGE_KEY}@${memory.schemaVersion}`,
+    sourceStorageVersion: `${LEGACY_MOVING_STORAGE_KEY}@${moving.schemaVersion}`,
     entities,
   };
 }

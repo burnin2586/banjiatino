@@ -35,7 +35,7 @@ begin
   if p_operation_id is null or p_project_id is null or p_entity_id is null then
     raise exception 'operation_id, project_id, and entity_id are required' using errcode = '22023';
   end if;
-  if p_entity_type is null or p_entity_type not in ('room', 'task', 'box', 'item', 'memory_house', 'memory_room', 'memory_wall') then
+  if p_entity_type is null or p_entity_type not in ('room', 'task', 'box', 'item') then
     raise exception 'unsupported entity_type' using errcode = '22023';
   end if;
   if p_action is null or p_action not in ('create', 'update', 'set_status', 'complete', 'soft_delete', 'restore') then
@@ -83,16 +83,10 @@ begin
     when p_action = 'create' and p_entity_type = 'task' then array['title', 'notes', 'status', 'due_at', 'assignee_id']
     when p_action = 'create' and p_entity_type = 'box' then array['label', 'notes', 'status', 'source_room_id', 'destination_room_id', 'assignee_id']
     when p_action = 'create' and p_entity_type = 'item' then array['name', 'notes', 'box_id']
-    when p_action = 'create' and p_entity_type = 'memory_house' then array['name', 'notes']
-    when p_action = 'create' and p_entity_type = 'memory_room' then array['name', 'notes', 'house_id']
-    when p_action = 'create' and p_entity_type = 'memory_wall' then array['name', 'notes', 'memory_room_id']
     when p_action = 'update' and p_entity_type = 'room' then array['name', 'room_kind']
     when p_action = 'update' and p_entity_type = 'task' then array['title', 'notes', 'due_at', 'assignee_id']
     when p_action = 'update' and p_entity_type = 'box' then array['label', 'notes', 'source_room_id', 'destination_room_id', 'assignee_id']
     when p_action = 'update' and p_entity_type = 'item' then array['name', 'notes', 'box_id']
-    when p_action = 'update' and p_entity_type = 'memory_house' then array['name', 'notes']
-    when p_action = 'update' and p_entity_type = 'memory_room' then array['name', 'notes', 'house_id']
-    when p_action = 'update' and p_entity_type = 'memory_wall' then array['name', 'notes', 'memory_room_id']
     when p_action = 'set_status' and p_entity_type in ('task', 'box') then array['status']
     when p_action = 'complete' and p_entity_type = 'task' then array[]::text[]
     when p_action in ('soft_delete', 'restore') then array[]::text[]
@@ -109,7 +103,7 @@ begin
     from jsonb_object_keys(p_payload) as key_name
     where (key_name in ('name', 'room_kind', 'title', 'label', 'status') and jsonb_typeof(p_payload -> key_name) <> 'string')
        or (key_name = 'notes' and jsonb_typeof(p_payload -> key_name) not in ('string', 'null'))
-       or (key_name in ('assignee_id', 'source_room_id', 'destination_room_id', 'box_id', 'house_id', 'memory_room_id') and jsonb_typeof(p_payload -> key_name) not in ('string', 'null'))
+       or (key_name in ('assignee_id', 'source_room_id', 'destination_room_id', 'box_id') and jsonb_typeof(p_payload -> key_name) not in ('string', 'null'))
        or (key_name = 'due_at' and jsonb_typeof(p_payload -> key_name) not in ('string', 'null'))
   ) then
     raise exception 'payload field has invalid type' using errcode = '22023';
@@ -125,9 +119,6 @@ begin
       when 'task' then select version, deleted_at, status into v_version, v_deleted_at, v_status from public.moving_tasks where id = p_entity_id and project_id = p_project_id for update;
       when 'box' then select version, deleted_at, status into v_version, v_deleted_at, v_status from public.moving_boxes where id = p_entity_id and project_id = p_project_id for update;
       when 'item' then select version, deleted_at, null::text into v_version, v_deleted_at, v_status from public.moving_items where id = p_entity_id and project_id = p_project_id for update;
-      when 'memory_house' then select version, deleted_at, null::text into v_version, v_deleted_at, v_status from public.memory_houses where id = p_entity_id and project_id = p_project_id for update;
-      when 'memory_room' then select version, deleted_at, null::text into v_version, v_deleted_at, v_status from public.memory_rooms where id = p_entity_id and project_id = p_project_id for update;
-      when 'memory_wall' then select version, deleted_at, null::text into v_version, v_deleted_at, v_status from public.memory_walls where id = p_entity_id and project_id = p_project_id for update;
     end case;
     if not found then
       raise exception 'entity not found in project' using errcode = 'P0002';
@@ -211,21 +202,6 @@ begin
         update public.moving_items set name = case when p_payload ? 'name' then p_payload->>'name' else name end, notes = case when p_payload ? 'notes' then p_payload->>'notes' else notes end, box_id = case when p_payload ? 'box_id' then (p_payload->>'box_id')::uuid else box_id end, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(moving_items) into v_entity;
       elsif p_action = 'soft_delete' then update public.moving_items set deleted_at = now(), updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(moving_items) into v_entity;
       elsif p_action = 'restore' then update public.moving_items set deleted_at = null, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(moving_items) into v_entity; end if;
-    when 'memory_house' then
-      if p_action = 'create' then if not (p_payload ? 'name') then raise exception 'name is required' using errcode = '22023'; end if; insert into public.memory_houses (id, project_id, name, notes, created_by, updated_by) values (p_entity_id, p_project_id, p_payload->>'name', p_payload->>'notes', v_actor_id, v_actor_id) returning to_jsonb(memory_houses) into v_entity;
-      elsif p_action = 'update' then update public.memory_houses set name = case when p_payload ? 'name' then p_payload->>'name' else name end, notes = case when p_payload ? 'notes' then p_payload->>'notes' else notes end, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_houses) into v_entity;
-      elsif p_action = 'soft_delete' then update public.memory_houses set deleted_at = now(), updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_houses) into v_entity;
-      elsif p_action = 'restore' then update public.memory_houses set deleted_at = null, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_houses) into v_entity; end if;
-    when 'memory_room' then
-      if p_action = 'create' then if not (p_payload ? 'name') or not (p_payload ? 'house_id') then raise exception 'name and house_id are required' using errcode = '22023'; end if; insert into public.memory_rooms (id, project_id, house_id, name, notes, created_by, updated_by) values (p_entity_id, p_project_id, (p_payload->>'house_id')::uuid, p_payload->>'name', p_payload->>'notes', v_actor_id, v_actor_id) returning to_jsonb(memory_rooms) into v_entity;
-      elsif p_action = 'update' then update public.memory_rooms set name = case when p_payload ? 'name' then p_payload->>'name' else name end, notes = case when p_payload ? 'notes' then p_payload->>'notes' else notes end, house_id = case when p_payload ? 'house_id' then (p_payload->>'house_id')::uuid else house_id end, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_rooms) into v_entity;
-      elsif p_action = 'soft_delete' then update public.memory_rooms set deleted_at = now(), updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_rooms) into v_entity;
-      elsif p_action = 'restore' then update public.memory_rooms set deleted_at = null, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_rooms) into v_entity; end if;
-    when 'memory_wall' then
-      if p_action = 'create' then if not (p_payload ? 'name') or not (p_payload ? 'memory_room_id') then raise exception 'name and memory_room_id are required' using errcode = '22023'; end if; insert into public.memory_walls (id, project_id, memory_room_id, name, notes, created_by, updated_by) values (p_entity_id, p_project_id, (p_payload->>'memory_room_id')::uuid, p_payload->>'name', p_payload->>'notes', v_actor_id, v_actor_id) returning to_jsonb(memory_walls) into v_entity;
-      elsif p_action = 'update' then update public.memory_walls set name = case when p_payload ? 'name' then p_payload->>'name' else name end, notes = case when p_payload ? 'notes' then p_payload->>'notes' else notes end, memory_room_id = case when p_payload ? 'memory_room_id' then (p_payload->>'memory_room_id')::uuid else memory_room_id end, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_walls) into v_entity;
-      elsif p_action = 'soft_delete' then update public.memory_walls set deleted_at = now(), updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_walls) into v_entity;
-      elsif p_action = 'restore' then update public.memory_walls set deleted_at = null, updated_by = v_actor_id, updated_at = now(), version = version + 1 where id = p_entity_id and project_id = p_project_id returning to_jsonb(memory_walls) into v_entity; end if;
   end case;
 
   if p_action = 'soft_delete' then

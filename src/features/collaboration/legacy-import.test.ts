@@ -6,7 +6,6 @@ import {
   type LegacyImportRepositories,
 } from './legacy-import';
 
-import type { MemoryState } from '@/types/memory';
 import type { MovingState } from '@/types/moving';
 
 const moving: MovingState = {
@@ -42,23 +41,6 @@ const moving: MovingState = {
   }],
 };
 
-const memory: MemoryState = {
-  schemaVersion: 1,
-  houses: [{
-    id: 'house-1', name: '老房子', coverColor: '#eee', note: '有阳台', order: 0,
-    createdAt: 1_786_646_407_000, updatedAt: 1_786_646_408_000,
-  }],
-  rooms: [{
-    id: 'memory-room-1', houseId: 'house-1', name: '客厅', color: '#fff', note: '朝南', order: 0,
-    walls: [{ id: 'wall-1', x1: 0, y1: 0, x2: 100, y2: 0 }],
-    photos: [{
-      id: 'memory-photo-1', wallId: 'wall-1', t: 0.5, imageUri: 'file:///documents/living-room.jpg',
-      caption: '午后', createdAt: 1_786_646_409_000,
-    }],
-    createdAt: 1_786_646_410_000, updatedAt: 1_786_646_411_000,
-  }],
-};
-
 class AtomicImportRepositories implements LegacyImportRepositories {
   readonly entities = new Map<string, unknown>();
   readonly receipts = new Map<string, LegacyImportReceipt>();
@@ -90,9 +72,9 @@ class AtomicImportRepositories implements LegacyImportRepositories {
 
 describe('legacy local-data import', () => {
   it('builds a deterministic plan with rooms before referenced boxes and keeps local photo paths', () => {
-    const plan = buildLegacyImportPlan(moving, memory);
+    const plan = buildLegacyImportPlan(moving);
 
-    expect(plan.sourceStorageVersion).toBe('banjiatino-moving-state-v1@4|banjiatino-memory-state-v1@1');
+    expect(plan.sourceStorageVersion).toBe('banjiatino-moving-state-v1@4');
     expect(plan.entities.map(entity => entity.sourceKey)).toEqual([
       'legacy:room:source-kitchen',
       'legacy:room:destination-kitchen',
@@ -100,10 +82,6 @@ describe('legacy local-data import', () => {
       'legacy:item:item-1',
       'legacy:task:task-1',
       'legacy:storage_photo:storage-photo-1',
-      'legacy:memory_house:house-1',
-      'legacy:memory_room:memory-room-1',
-      'legacy:memory_wall:wall-1',
-      'legacy:memory_photo:memory-photo-1',
     ]);
     expect(plan.entities.map(entity => entity.id)).toEqual([
       'c5b73af8-fc91-55aa-ba89-9945a99e8931',
@@ -112,10 +90,6 @@ describe('legacy local-data import', () => {
       '3a31d6c5-1a2c-5dd9-ba0b-14ad16be768a',
       '16b71dbc-3397-56b1-bd41-cb7717dcd163',
       'c7310a2f-b4a3-5a50-8cec-3aa2420fa30c',
-      '71de34b8-ca17-5fd3-8e98-79ca1543374a',
-      '6abc56e4-1dd3-587e-9086-9595eec3ee1b',
-      '5ad3f366-2026-52c5-a0f3-a786f7886f11',
-      '18fec5b9-6366-59f9-b809-2b21a2d763c1',
     ]);
     expect(plan.entities[2]).toMatchObject({
       references: ['c5b73af8-fc91-55aa-ba89-9945a99e8931', '07730deb-b664-567a-bf5d-d6b86e7b93a3'],
@@ -125,19 +99,18 @@ describe('legacy local-data import', () => {
       payload: { dueOffsetDays: -7, movingDate: 1_786_665_600_000, notes: '上午' },
     });
     expect(plan.entities[5]).toMatchObject({ payload: { localPath: 'file:///documents/cabinet.jpg' } });
-    expect(plan.entities[9]).toMatchObject({ payload: { localPath: 'file:///documents/living-room.jpg' } });
-    expect(buildLegacyImportPlan(moving, memory)).toEqual(plan);
+    expect(buildLegacyImportPlan(moving)).toEqual(plan);
   });
 
   it('records a completed receipt once and makes retries idempotent', async () => {
     const repositories = new AtomicImportRepositories();
-    const plan = buildLegacyImportPlan(moving, memory);
+    const plan = buildLegacyImportPlan(moving);
 
     const first = await executeLegacyImport(plan, repositories);
     const second = await executeLegacyImport(plan, repositories);
 
     expect(first).toEqual({
-      sourceStorageVersion: 'banjiatino-moving-state-v1@4|banjiatino-memory-state-v1@1',
+      sourceStorageVersion: 'banjiatino-moving-state-v1@4',
       status: 'completed', attemptCount: 1, importedEntityIds: plan.entities.map(entity => entity.id),
     });
     expect(second).toEqual(first);
@@ -147,14 +120,14 @@ describe('legacy local-data import', () => {
 
   it('keeps legacy data retryable after a transaction failure and completes on the next attempt', async () => {
     const repositories = new AtomicImportRepositories();
-    const plan = buildLegacyImportPlan(moving, memory);
+    const plan = buildLegacyImportPlan(moving);
     repositories.failNextEntityId = 'ea42617c-9748-5b75-addb-8f96a42d8c61';
 
     const failed = await executeLegacyImport(plan, repositories);
     const retried = await executeLegacyImport(plan, repositories);
 
     expect(failed).toEqual({
-      sourceStorageVersion: 'banjiatino-moving-state-v1@4|banjiatino-memory-state-v1@1',
+      sourceStorageVersion: 'banjiatino-moving-state-v1@4',
       status: 'retryable', attemptCount: 1, importedEntityIds: [], lastError: 'injected repository failure',
     });
     expect(retried).toMatchObject({ status: 'completed', attemptCount: 2 });

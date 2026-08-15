@@ -125,58 +125,6 @@ create table public.moving_items (
   foreign key (project_id, updated_by) references public.project_members(project_id, user_id)
 );
 
-create table public.memory_houses (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.moving_projects(id) on delete cascade,
-  name text not null check (char_length(btrim(name)) between 1 and 160),
-  notes text,
-  created_by uuid not null,
-  updated_by uuid not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  version bigint not null default 1,
-  deleted_at timestamptz,
-  unique (project_id, id),
-  foreign key (project_id, created_by) references public.project_members(project_id, user_id),
-  foreign key (project_id, updated_by) references public.project_members(project_id, user_id)
-);
-
-create table public.memory_rooms (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.moving_projects(id) on delete cascade,
-  house_id uuid not null,
-  name text not null check (char_length(btrim(name)) between 1 and 160),
-  notes text,
-  created_by uuid not null,
-  updated_by uuid not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  version bigint not null default 1,
-  deleted_at timestamptz,
-  unique (project_id, id),
-  foreign key (project_id, house_id) references public.memory_houses(project_id, id),
-  foreign key (project_id, created_by) references public.project_members(project_id, user_id),
-  foreign key (project_id, updated_by) references public.project_members(project_id, user_id)
-);
-
-create table public.memory_walls (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references public.moving_projects(id) on delete cascade,
-  memory_room_id uuid not null,
-  name text not null check (char_length(btrim(name)) between 1 and 160),
-  notes text,
-  created_by uuid not null,
-  updated_by uuid not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  version bigint not null default 1,
-  deleted_at timestamptz,
-  unique (project_id, id),
-  foreign key (project_id, memory_room_id) references public.memory_rooms(project_id, id),
-  foreign key (project_id, created_by) references public.project_members(project_id, user_id),
-  foreign key (project_id, updated_by) references public.project_members(project_id, user_id)
-);
-
 create table public.applied_operations (
   operation_id uuid primary key,
   project_id uuid not null references public.moving_projects(id) on delete cascade,
@@ -229,15 +177,6 @@ create index moving_boxes_deleted_at_idx on public.moving_boxes (deleted_at) whe
 create index moving_items_project_id_idx on public.moving_items (project_id);
 create index moving_items_updated_at_idx on public.moving_items (updated_at);
 create index moving_items_deleted_at_idx on public.moving_items (deleted_at) where deleted_at is not null;
-create index memory_houses_project_id_idx on public.memory_houses (project_id);
-create index memory_houses_updated_at_idx on public.memory_houses (updated_at);
-create index memory_houses_deleted_at_idx on public.memory_houses (deleted_at) where deleted_at is not null;
-create index memory_rooms_project_id_idx on public.memory_rooms (project_id);
-create index memory_rooms_updated_at_idx on public.memory_rooms (updated_at);
-create index memory_rooms_deleted_at_idx on public.memory_rooms (deleted_at) where deleted_at is not null;
-create index memory_walls_project_id_idx on public.memory_walls (project_id);
-create index memory_walls_updated_at_idx on public.memory_walls (updated_at);
-create index memory_walls_deleted_at_idx on public.memory_walls (deleted_at) where deleted_at is not null;
 create index applied_operations_project_id_idx on public.applied_operations (project_id);
 create index project_changes_project_cursor_idx on public.project_changes (project_id, cursor);
 
@@ -338,9 +277,6 @@ alter table public.rooms enable row level security;
 alter table public.moving_tasks enable row level security;
 alter table public.moving_boxes enable row level security;
 alter table public.moving_items enable row level security;
-alter table public.memory_houses enable row level security;
-alter table public.memory_rooms enable row level security;
-alter table public.memory_walls enable row level security;
 alter table public.applied_operations enable row level security;
 alter table public.project_changes enable row level security;
 
@@ -385,18 +321,6 @@ create policy "project members can read items"
 on public.moving_items for select to authenticated
 using ((select public.is_project_member(project_id)));
 
-create policy "project members can read memory houses"
-on public.memory_houses for select to authenticated
-using ((select public.is_project_member(project_id)));
-
-create policy "project members can read memory rooms"
-on public.memory_rooms for select to authenticated
-using ((select public.is_project_member(project_id)));
-
-create policy "project members can read memory walls"
-on public.memory_walls for select to authenticated
-using ((select public.is_project_member(project_id)));
-
 revoke all on schema private from public;
 revoke all on schema private from anon;
 grant usage on schema private to authenticated;
@@ -409,9 +333,6 @@ revoke all on table public.profiles,
   public.moving_tasks,
   public.moving_boxes,
   public.moving_items,
-  public.memory_houses,
-  public.memory_rooms,
-  public.memory_walls,
   public.applied_operations,
   public.project_changes
 from anon, authenticated;
@@ -422,10 +343,7 @@ grant select on table public.profiles,
   public.rooms,
   public.moving_tasks,
   public.moving_boxes,
-  public.moving_items,
-  public.memory_houses,
-  public.memory_rooms,
-  public.memory_walls
+  public.moving_items
 to authenticated;
 
 grant update on table public.profiles to authenticated;

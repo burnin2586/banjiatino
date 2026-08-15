@@ -2,10 +2,7 @@ export type EntityType =
   | 'room'
   | 'task'
   | 'box'
-  | 'item'
-  | 'memory_house'
-  | 'memory_room'
-  | 'memory_wall';
+  | 'item';
 
 export type OperationAction =
   | 'create'
@@ -54,9 +51,6 @@ const entityTypes = new Set<EntityType>([
   'task',
   'box',
   'item',
-  'memory_house',
-  'memory_room',
-  'memory_wall',
 ]);
 
 const operationActions = new Set<OperationAction>([
