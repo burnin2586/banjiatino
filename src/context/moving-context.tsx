@@ -12,6 +12,7 @@ import {
 import { initialMovingState } from '@/data/initial-data';
 import { type ItemTemplateEntry } from '@/data/item-templates';
 import { TASK_PRESETS } from '@/data/task-presets';
+import { LEGACY_MOVING_STORAGE_KEY } from '@/features/collaboration/legacy-import';
 import { buildItemsFromTemplate } from '@/logic/item-template';
 import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
 import { deleteStoragePhotoFile } from '@/logic/photo-store';
@@ -29,7 +30,7 @@ import type {
   RoomKind,
 } from '@/types/moving';
 
-const STORAGE_KEY = 'banjiatino-moving-state-v1';
+const STORAGE_KEY = LEGACY_MOVING_STORAGE_KEY;
 
 type RoomInput = {
   name: string;

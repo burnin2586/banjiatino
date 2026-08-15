@@ -1,0 +1,1 @@
+-- Collaboration rows are created only through authenticated RPCs.

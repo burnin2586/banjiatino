@@ -11,6 +11,7 @@ import {
 
 import { deletePhotoFile, savePhotoFile } from '@/logic/photo-store';
 import { migrateMemoryState } from '@/logic/memory';
+import { LEGACY_MEMORY_STORAGE_KEY } from '@/features/collaboration/legacy-import';
 import type {
   MemoryHouse,
   MemoryRoom,
@@ -19,7 +20,7 @@ import type {
   Wall,
 } from '@/types/memory';
 
-const STORAGE_KEY = 'banjiatino-memory-state-v1';
+const STORAGE_KEY = LEGACY_MEMORY_STORAGE_KEY;
 const EMPTY_STATE: MemoryState = { schemaVersion: 1, houses: [], rooms: [] };
 
 type HouseInput = { name: string; coverColor: string; note?: string };
