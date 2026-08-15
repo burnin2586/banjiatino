@@ -21,8 +21,11 @@ import BoxesScreen from '@/app/boxes';
 import SearchScreen from '@/app/search';
 import StoragePhotoScreen from '@/app/storage/[photoId]';
 import TaskTimelineScreen from '@/app/task-timeline';
+import { CollaborationOnboardingScreen } from '@/app/collaboration-onboarding';
+import { LoadingScreen } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
 import { MovingProvider } from '@/context/moving-context';
+import { SessionProvider, useSession } from '@/context/session-context';
 import {
   getTabBarLayout,
   getTabItemPresentation,
@@ -94,17 +97,35 @@ function MainTabs() {
   );
 }
 
+function RootGate() {
+  const { status } = useSession();
+
+  if (status === 'bootstrapping') {
+    return <LoadingScreen label="正在准备你的搬家项目…" />;
+  }
+
+  if (status === 'needsOnboarding' || status === 'offlineWithoutIdentity' || status === 'retryable') {
+    return <CollaborationOnboardingScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Screen name="MainTabs" component={MainTabs} />
+        <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
+        <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
+      </RootStack.Navigator>
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
     <MovingProvider>
-      <StatusBar barStyle="dark-content" />
-      <NavigationContainer>
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          <RootStack.Screen name="MainTabs" component={MainTabs} />
-          <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
-          <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
-        </RootStack.Navigator>
-      </NavigationContainer>
+      <SessionProvider>
+        <StatusBar barStyle="dark-content" />
+        <RootGate />
+      </SessionProvider>
     </MovingProvider>
   );
 }
