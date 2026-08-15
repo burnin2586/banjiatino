@@ -19,13 +19,9 @@ import HomeScreen from '@/app/index';
 import ItemsScreen from '@/app/items';
 import BoxesScreen from '@/app/boxes';
 import SearchScreen from '@/app/search';
-import MemoryHomeScreen from '@/app/memory/index';
-import RoomsScreen from '@/app/memory/[houseId]/index';
-import RoomEditorScreen from '@/app/memory/[houseId]/[roomId]';
 import StoragePhotoScreen from '@/app/storage/[photoId]';
 import TaskTimelineScreen from '@/app/task-timeline';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
-import { MemoryProvider } from '@/context/memory-context';
 import { MovingProvider } from '@/context/moving-context';
 import {
   getTabBarLayout,
@@ -94,7 +90,6 @@ function MainTabs() {
       <Tabs.Screen name="Items" component={ItemsScreen} />
       <Tabs.Screen name="Boxes" component={BoxesScreen} />
       <Tabs.Screen name="Search" component={SearchScreen} />
-      <Tabs.Screen name="Memory" component={MemoryHomeScreen} />
     </Tabs.Navigator>
   );
 }
@@ -102,18 +97,14 @@ function MainTabs() {
 export default function App() {
   return (
     <MovingProvider>
-      <MemoryProvider>
-        <StatusBar barStyle="dark-content" />
-        <NavigationContainer>
-          <RootStack.Navigator screenOptions={{ headerShown: false }}>
-            <RootStack.Screen name="MainTabs" component={MainTabs} />
-            <RootStack.Screen name="Rooms" component={RoomsScreen} />
-            <RootStack.Screen name="RoomEditor" component={RoomEditorScreen} />
-            <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
-            <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
-          </RootStack.Navigator>
-        </NavigationContainer>
-      </MemoryProvider>
+      <StatusBar barStyle="dark-content" />
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="MainTabs" component={MainTabs} />
+          <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
+          <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
+        </RootStack.Navigator>
+      </NavigationContainer>
     </MovingProvider>
   );
 }

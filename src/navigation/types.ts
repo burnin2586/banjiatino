@@ -5,13 +5,10 @@ export type MainTabParamList = {
   Items: undefined;
   Boxes: undefined;
   Search: undefined;
-  Memory: undefined;
 };
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
-  Rooms: { houseId: string };
-  RoomEditor: { roomId: string };
   StoragePhoto: { photoId: string };
   TaskTimeline: undefined;
 };
