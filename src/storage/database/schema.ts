@@ -1,4 +1,4 @@
-export const DATABASE_SCHEMA_VERSION = 1;
+export const DATABASE_SCHEMA_VERSION = 2;
 
 export type DatabaseMigration = {
   version: number;
@@ -140,6 +140,28 @@ export const databaseMigrations: DatabaseMigration[] = [
       'CREATE INDEX IF NOT EXISTS moving_items_project_filter_idx ON moving_items(project_id, box_id, updated_at)',
       'CREATE INDEX IF NOT EXISTS outbox_project_order_idx ON outbox(project_id, created_at, operation_id)',
       'CREATE INDEX IF NOT EXISTS project_changes_project_cursor_idx ON project_change_notifications(project_id, id)',
+    ],
+  },
+  {
+    version: 2,
+    statements: [
+      'ALTER TABLE rooms ADD COLUMN color TEXT',
+      'ALTER TABLE rooms ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
+      'ALTER TABLE moving_items ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1',
+      'ALTER TABLE moving_items ADD COLUMN original_location TEXT',
+      'ALTER TABLE moving_items ADD COLUMN destination_location TEXT',
+      'ALTER TABLE moving_items ADD COLUMN action TEXT',
+      'ALTER TABLE moving_boxes ADD COLUMN storage_photo_id TEXT',
+      'ALTER TABLE moving_boxes ADD COLUMN marker_rect TEXT',
+      'ALTER TABLE moving_tasks ADD COLUMN due_offset_days INTEGER',
+      `CREATE TABLE IF NOT EXISTS legacy_import_receipts (
+        source_storage_version TEXT PRIMARY KEY NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('completed', 'retryable')),
+        attempt_count INTEGER NOT NULL DEFAULT 0,
+        imported_entity_ids_json TEXT NOT NULL DEFAULT '[]',
+        last_error TEXT,
+        updated_at TEXT NOT NULL
+      )`,
     ],
   },
 ];

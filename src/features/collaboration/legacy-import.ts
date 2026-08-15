@@ -31,14 +31,15 @@ export type LegacyImportReceipt = {
   lastError?: string;
 };
 
-export type LegacyImportRepositoryTransaction = {
+export type LegacyImportTransaction = {
   upsert: (entity: LegacyImportEntity) => Promise<void>;
+  saveReceipt: (receipt: LegacyImportReceipt) => Promise<void>;
 };
 
 export type LegacyImportRepositories = {
   getReceipt: (sourceStorageVersion: string) => Promise<LegacyImportReceipt | null>;
   saveReceipt: (receipt: LegacyImportReceipt) => Promise<void>;
-  transaction: (work: (transaction: LegacyImportRepositoryTransaction) => Promise<void>) => Promise<void>;
+  transaction: (work: (transaction: LegacyImportTransaction) => Promise<void>) => Promise<void>;
 };
 
 function legacySourceKey(type: LegacyImportEntityType, id: string): string {
@@ -126,7 +127,7 @@ function sha1(bytes: number[]): number[] {
   ]);
 }
 
-function legacyEntityId(type: LegacyImportEntityType, id: string): string {
+export function legacyEntityId(type: LegacyImportEntityType, id: string): string {
   const sourceKey = legacySourceKey(type, id);
   const uuid = sha1([...LEGACY_UUID_NAMESPACE, ...utf8Bytes(sourceKey)]).slice(0, 16);
   uuid[6] = (uuid[6] & 0x0f) | 0x50;
@@ -235,8 +236,9 @@ export function buildLegacyImportPlan(moving: MovingState): LegacyImportPlan {
 }
 
 /**
- * Applies a plan through the local repository transaction boundary. Receipts make a completed
- * import a no-op, while a rolled-back failure remains visible and can be retried safely.
+ * Applies a plan through the local repository transaction boundary. The completed receipt is
+ * written in the same transaction as every entity, so a crash can never leave a half-import
+ * marked done; a rolled-back failure records a retryable receipt and can be retried safely.
  */
 export async function executeLegacyImport(
   plan: LegacyImportPlan,
@@ -246,21 +248,21 @@ export async function executeLegacyImport(
   if (previous?.status === 'completed') return previous;
 
   const attemptCount = (previous?.attemptCount ?? 0) + 1;
+  const completed: LegacyImportReceipt = {
+    sourceStorageVersion: plan.sourceStorageVersion,
+    status: 'completed',
+    attemptCount,
+    importedEntityIds: plan.entities.map(entity => entity.id),
+  };
+
   try {
     await repositories.transaction(async transaction => {
       for (const entity of plan.entities) {
         await transaction.upsert(entity);
       }
+      await transaction.saveReceipt(completed);
     });
-
-    const receipt: LegacyImportReceipt = {
-      sourceStorageVersion: plan.sourceStorageVersion,
-      status: 'completed',
-      attemptCount,
-      importedEntityIds: plan.entities.map(entity => entity.id),
-    };
-    await repositories.saveReceipt(receipt);
-    return receipt;
+    return completed;
   } catch (error) {
     const receipt: LegacyImportReceipt = {
       sourceStorageVersion: plan.sourceStorageVersion,

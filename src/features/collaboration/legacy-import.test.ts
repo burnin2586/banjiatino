@@ -2,7 +2,7 @@ import {
   buildLegacyImportPlan,
   executeLegacyImport,
   type LegacyImportReceipt,
-  type LegacyImportRepositoryTransaction,
+  type LegacyImportTransaction,
   type LegacyImportRepositories,
 } from './legacy-import';
 
@@ -54,8 +54,9 @@ class AtomicImportRepositories implements LegacyImportRepositories {
     this.receipts.set(receipt.sourceStorageVersion, receipt);
   }
 
-  async transaction(work: (transaction: LegacyImportRepositoryTransaction) => Promise<void>) {
+  async transaction(work: (transaction: LegacyImportTransaction) => Promise<void>) {
     const staged = new Map(this.entities);
+    const stagedReceipts = new Map(this.receipts);
     await work({
       upsert: async entity => {
         if (entity.id === this.failNextEntityId) {
@@ -64,9 +65,14 @@ class AtomicImportRepositories implements LegacyImportRepositories {
         }
         staged.set(entity.id, entity);
       },
+      saveReceipt: async receipt => {
+        stagedReceipts.set(receipt.sourceStorageVersion, receipt);
+      },
     });
     this.entities.clear();
     staged.forEach((value, key) => this.entities.set(key, value));
+    this.receipts.clear();
+    stagedReceipts.forEach((value, key) => this.receipts.set(key, value));
   }
 }
 
