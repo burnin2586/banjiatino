@@ -14,7 +14,6 @@ export const tabOrder = [
   'Items',
   'Boxes',
   'Search',
-  'Memory',
 ] as const satisfies readonly TabRouteName[];
 
 const tabPresentation: Record<TabRouteName, TabPresentation> = {
@@ -22,7 +21,6 @@ const tabPresentation: Record<TabRouteName, TabPresentation> = {
   Items: { label: '物品', glyph: '◇' },
   Boxes: { label: '箱子', glyph: '□' },
   Search: { label: '查找', glyph: '⌕' },
-  Memory: { label: '回忆', glyph: '◉' },
 };
 
 export function getTabPresentation(routeName: TabRouteName): TabPresentation {

@@ -7,14 +7,13 @@ import {
   tabOrder,
 } from './tab-presentation';
 
-test('keeps the approved five destinations, labels, and glyphs', () => {
-  expect(tabOrder).toEqual(['Home', 'Items', 'Boxes', 'Search', 'Memory']);
+test('keeps the approved four destinations, labels, and glyphs', () => {
+  expect(tabOrder).toEqual(['Home', 'Items', 'Boxes', 'Search']);
   expect(tabOrder.map((route) => getTabPresentation(route))).toEqual([
     { label: '进度', glyph: '⌂' },
     { label: '物品', glyph: '◇' },
     { label: '箱子', glyph: '□' },
     { label: '查找', glyph: '⌕' },
-    { label: '回忆', glyph: '◉' },
   ]);
 });
 
