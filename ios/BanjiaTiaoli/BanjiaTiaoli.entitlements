@@ -6,7 +6,7 @@
 	     before device TestFlight builds; simulator builds run unsigned without it. -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:move.example.com</string>
+		<string>applinks:lyuboning.com</string>
 	</array>
 </dict>
 </plist>

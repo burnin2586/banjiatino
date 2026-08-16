@@ -34,10 +34,10 @@ begin
     raise exception 'archived projects cannot send invitations' using errcode = '55006';
   end if;
 
-  v_token := encode(gen_random_bytes(32), 'base64');
+  v_token := encode(extensions.gen_random_bytes(32), 'base64');
   v_token := replace(replace(v_token, '+', '-'), '/', '_');
   v_token := rtrim(v_token, '=');
-  v_token_hash := encode(digest(v_token, 'sha256'), 'hex');
+  v_token_hash := encode(extensions.digest(v_token, 'sha256'), 'hex');
   v_expires_at := now() + p_expires_after;
 
   insert into public.invitations (id, project_id, token_hash, expires_at, created_by)
@@ -120,7 +120,7 @@ begin
     raise exception 'token is required' using errcode = '22023';
   end if;
 
-  v_token_hash := encode(digest(p_token, 'sha256'), 'hex');
+  v_token_hash := encode(extensions.digest(p_token, 'sha256'), 'hex');
 
   select * into v_invitation
   from public.invitations
