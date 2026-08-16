@@ -1,11 +1,12 @@
 import { NavigationContainer } from '@react-navigation/native';
-import type { Ref } from 'react';
+import { useEffect, useState, type Ref } from 'react';
 import {
   createBottomTabNavigator,
   type BottomTabBarButtonProps,
 } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
+  Linking,
   Pressable,
   type PressableProps,
   StatusBar,
@@ -13,6 +14,7 @@ import {
   Text,
   type View,
 } from 'react-native';
+import Config from 'react-native-config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '@/app/index';
@@ -22,6 +24,8 @@ import SearchScreen from '@/app/search';
 import StoragePhotoScreen from '@/app/storage/[photoId]';
 import TaskTimelineScreen from '@/app/task-timeline';
 import { CollaborationOnboardingScreen } from '@/app/collaboration-onboarding';
+import { JoinProjectScreen } from '@/app/join-project';
+import { parseInvitationUrl } from '@/features/collaboration/invite-links';
 import { LoadingScreen } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
 import { MovingProvider } from '@/context/moving-context';
@@ -97,11 +101,42 @@ function MainTabs() {
   );
 }
 
+function useInvitationToken(): string | null {
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleUrl = (url: string | null) => {
+      if (!url) return;
+      const inviteBaseUrl = Config.INVITE_BASE_URL;
+      if (!inviteBaseUrl) return;
+      const parsed = parseInvitationUrl(url, inviteBaseUrl);
+      if (parsed) setToken(parsed.token);
+    };
+
+    void Linking.getInitialURL().then(handleUrl);
+    const subscription = Linking.addEventListener('url', event => handleUrl(event.url));
+    return () => subscription.remove();
+  }, []);
+
+  return token;
+}
+
 function RootGate() {
   const { status } = useSession();
+  const invitationToken = useInvitationToken();
+  const [inviteDismissed, setInviteDismissed] = useState(false);
 
   if (status === 'bootstrapping') {
     return <LoadingScreen label="正在准备你的搬家项目…" />;
+  }
+
+  if (invitationToken && !inviteDismissed) {
+    return (
+      <JoinProjectScreen
+        token={invitationToken}
+        onFinished={() => setInviteDismissed(true)}
+      />
+    );
   }
 
   if (status === 'needsOnboarding' || status === 'offlineWithoutIdentity' || status === 'retryable') {

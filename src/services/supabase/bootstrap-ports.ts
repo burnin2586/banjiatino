@@ -70,6 +70,10 @@ async function readLegacyMovingState() {
  * Connects the bootstrap state machine to the real Supabase client, AsyncStorage project
  * cache, and the Task 5 legacy import coordinator.
  */
+export async function saveCachedProject(projectId: string): Promise<void> {
+  await AsyncStorage.setItem(CACHED_PROJECT_KEY, projectId);
+}
+
 export function createBootstrapPorts(client: Client = getSupabaseClient()): BootstrapPorts {
   return {
     restoreSession: async () => {

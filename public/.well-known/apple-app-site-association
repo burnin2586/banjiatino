@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.banjiatino.app"],
+        "components": [
+          { "/": "/invite/*", "comment": "Family collaboration invitation links only" }
+        ]
+      }
+    ]
+  }
+}
