@@ -1,4 +1,4 @@
-export const DATABASE_SCHEMA_VERSION = 2;
+export const DATABASE_SCHEMA_VERSION = 3;
 
 export type DatabaseMigration = {
   version: number;
@@ -162,6 +162,13 @@ export const databaseMigrations: DatabaseMigration[] = [
         last_error TEXT,
         updated_at TEXT NOT NULL
       )`,
+    ],
+  },
+  {
+    version: 3,
+    statements: [
+      'ALTER TABLE outbox ADD COLUMN next_attempt_at INTEGER NOT NULL DEFAULT 0',
+      'ALTER TABLE outbox ADD COLUMN failure_code TEXT',
     ],
   },
 ];

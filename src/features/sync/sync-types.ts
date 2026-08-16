@@ -22,6 +22,8 @@ export type OutboxOperation = {
   payload: Record<string, unknown>;
   createdAt: number;
   attemptCount: number;
+  nextAttemptAt?: number;
+  failureCode?: string | null;
 };
 
 export type ApplyOperationResult = {
