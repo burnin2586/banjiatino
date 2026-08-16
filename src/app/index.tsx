@@ -14,6 +14,7 @@ import {
   StatusBadge,
   TextButton,
 } from '@/components/ui-kit';
+import { SyncBanner } from '@/components/sync-banner';
 import { RoomManager } from '@/components/room-manager';
 import { DateWheel } from '@/components/date-wheel';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
@@ -85,6 +86,8 @@ export default function HomeScreen() {
         title="一件不落地搬走"
         description="不用靠脑子记，让每件东西都有明确去向。"
       />
+
+      <SyncBanner />
 
       {movingDate === null ? (
         <Card style={styles.countdownCard}>

@@ -1,7 +1,6 @@
 import UIKit
 import React
 import React_RCTAppDelegate
-import React_RCTLinking
 import ReactAppDependencyProvider
 
 @main
@@ -48,7 +47,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     continue userActivity: NSUserActivity,
     restorationHandler: @escaping ([UIUserActivityRestoring]) -> Void
   ) -> Bool {
-    return RCTLinkingManager.application(application, continue: userActivity)
+    return RCTLinkingManager.application(
+      application,
+      continue: userActivity,
+      restorationHandler: { activities in restorationHandler(activities ?? []) }
+    )
   }
 }
 

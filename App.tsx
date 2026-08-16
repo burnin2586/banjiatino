@@ -30,6 +30,7 @@ import { LoadingScreen } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
 import { MovingProvider } from '@/context/moving-context';
 import { SessionProvider, useSession } from '@/context/session-context';
+import { SyncProvider } from '@/context/sync-context';
 import {
   getTabBarLayout,
   getTabItemPresentation,
@@ -122,7 +123,7 @@ function useInvitationToken(): string | null {
 }
 
 function RootGate() {
-  const { status } = useSession();
+  const { status, currentProjectId } = useSession();
   const invitationToken = useInvitationToken();
   const [inviteDismissed, setInviteDismissed] = useState(false);
 
@@ -144,13 +145,15 @@ function RootGate() {
   }
 
   return (
-    <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="MainTabs" component={MainTabs} />
-        <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
-        <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <SyncProvider projectId={currentProjectId ?? 'local'}>
+      <NavigationContainer>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          <RootStack.Screen name="MainTabs" component={MainTabs} />
+          <RootStack.Screen name="StoragePhoto" component={StoragePhotoScreen} />
+          <RootStack.Screen name="TaskTimeline" component={TaskTimelineScreen} />
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </SyncProvider>
   );
 }
 
