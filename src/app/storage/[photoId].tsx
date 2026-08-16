@@ -21,7 +21,10 @@ import {
 } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
-import type { MarkerRect, MovingBox, MovingItem } from '@/types/moving';
+import { formatBoxCode } from '@/types/moving';
+import type {
+  MarkerRect, MovingBox, MovingItem,
+} from '@/types/moving';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'StoragePhoto'>;
@@ -189,7 +192,7 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
 
       <ModalSheet
         visible={!!activeBox}
-        title={activeBox?.code ?? '箱子'}
+        title={activeBox ? formatBoxCode(activeBox) : '箱子'}
         onClose={() => setActiveBoxId(null)}>
         {activeBox ? (
           <View style={styles.sheetContent}>

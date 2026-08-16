@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { formatBoxCode } from '@/types/moving';
+
 import {
   Card,
   EmptyState,
@@ -41,7 +43,7 @@ export default function SearchScreen() {
         item.originalLocation,
         item.destinationLocation,
         item.note,
-        box?.code,
+        (box?.code ?? ''),
         box?.name,
         sourceRoom?.name,
         destinationRoom?.name,
@@ -151,7 +153,7 @@ export default function SearchScreen() {
                       {!isMoving
                         ? item.action
                         : box
-                          ? `${box.code} · ${box.name}`
+                          ? `${formatBoxCode(box)} · ${box.name}`
                           : '还没有分配箱子'}
                     </Text>
                     {box ? (

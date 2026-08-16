@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { formatBoxCode } from '@/types/moving';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -209,7 +210,7 @@ export default function HomeScreen() {
                   <Text style={styles.boxEmoji}>□</Text>
                 </View>
                 <View style={styles.boxText}>
-                  <Text style={styles.boxCode}>{box.code}</Text>
+                  <Text style={styles.boxCode}>{formatBoxCode(box)}</Text>
                   <Text style={styles.boxName}>{box.name}</Text>
                   <Text style={styles.boxMeta}>
                     {sourceRoom?.name ?? '未分区'} → {destinationRoom?.name ?? '未设置'} ·{' '}

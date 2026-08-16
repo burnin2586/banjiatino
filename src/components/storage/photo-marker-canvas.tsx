@@ -14,7 +14,10 @@ import {
 
 import { AppColors, AppSpacing } from '@/constants/app-theme';
 import { denormalizeRect, isValidMarkerSize, normalizeRect, type ScreenRect } from '@/logic/storage-marker';
-import type { MarkerRect, MovingBox, StoragePhoto } from '@/types/moving';
+import { formatBoxCode } from '@/types/moving';
+import type {
+  MarkerRect, MovingBox, StoragePhoto,
+} from '@/types/moving';
 
 type Props = {
   photo: StoragePhoto;
@@ -123,7 +126,7 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
                 ]}
               >
                 <Text style={styles.markerLabel} numberOfLines={1}>
-                  {b.code} {b.name}
+                  {formatBoxCode(b)} {b.name}
                 </Text>
               </Pressable>
             );

@@ -121,12 +121,12 @@ function RootGate() {
 
 export default function App() {
   return (
-    <MovingProvider>
-      <SessionProvider>
+    <SessionProvider>
+      <MovingProvider>
         <StatusBar barStyle="dark-content" />
         <RootGate />
-      </SessionProvider>
-    </MovingProvider>
+      </MovingProvider>
+    </SessionProvider>
   );
 }
 

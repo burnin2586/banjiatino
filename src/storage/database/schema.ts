@@ -169,6 +169,7 @@ export const databaseMigrations: DatabaseMigration[] = [
     statements: [
       'ALTER TABLE outbox ADD COLUMN next_attempt_at INTEGER NOT NULL DEFAULT 0',
       'ALTER TABLE outbox ADD COLUMN failure_code TEXT',
+      'ALTER TABLE moving_items ADD COLUMN status TEXT',
     ],
   },
 ];
