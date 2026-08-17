@@ -32,6 +32,7 @@ export type SessionContextValue = {
   identity: AuthIdentity | null;
   currentProjectId: string | null;
   legacyImportRetryable: boolean;
+  lastError: string | null;
   retry: () => void;
   submit: (input: OnboardingInput) => Promise<void>;
 };
@@ -136,6 +137,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     identity: state.identity,
     currentProjectId: state.currentProjectId,
     legacyImportRetryable: state.legacyImportRetryable,
+    lastError: state.retryableError,
     retry,
     submit,
   }), [bootstrapping, state, retry, submit]);

@@ -14,7 +14,7 @@ import { AppColors, AppRadius, AppSpacing, AppTypography } from '@/constants/app
 import { useSession } from '@/context/session-context';
 
 export function CollaborationOnboardingScreen() {
-  const { status, retry, submit } = useSession();
+  const { status, retry, submit, lastError } = useSession();
   const [displayName, setDisplayName] = useState('');
   const [projectName, setProjectName] = useState('');
   const [importLegacyData, setImportLegacyData] = useState(true);
@@ -79,7 +79,7 @@ export function CollaborationOnboardingScreen() {
             <Text style={styles.notice}>首次创建需要联网，请连接网络后再试。</Text>
           )}
           {status === 'retryable' && (
-            <Text style={styles.notice}>刚才没有成功，请重试一次。</Text>
+            <Text style={styles.notice}>刚才没有成功，请重试一次。{lastError ?? ''}</Text>
           )}
 
           <View style={styles.actions}>
