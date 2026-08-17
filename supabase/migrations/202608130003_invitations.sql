@@ -152,16 +152,19 @@ begin
     return v_invitation.project_id;
   end if;
 
+  -- The member row references profiles(user_id), so the profile must exist first;
+  -- a fresh anonymous joiner without a name gets a neutral default.
+  insert into public.profiles (user_id, display_name)
+  values (
+    v_actor_id,
+    coalesce(nullif(btrim(p_display_name), ''), '家人')
+  )
+  on conflict (user_id) do update set
+    display_name = coalesce(nullif(btrim(p_display_name), ''), public.profiles.display_name),
+    updated_at = now();
+
   insert into public.project_members (project_id, user_id)
   values (v_invitation.project_id, v_actor_id);
-
-  if p_display_name is not null and char_length(btrim(p_display_name)) between 1 and 80 then
-    insert into public.profiles (user_id, display_name)
-    values (v_actor_id, btrim(p_display_name))
-    on conflict (user_id) do update set
-      display_name = excluded.display_name,
-      updated_at = now();
-  end if;
 
   return v_invitation.project_id;
 end;
