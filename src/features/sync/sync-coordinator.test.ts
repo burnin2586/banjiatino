@@ -9,7 +9,7 @@ type CountedPorts = SyncCoordinatorPorts & {
   triggerLocalCommit: () => void;
 };
 
-function makePorts(): CountedPorts {
+function makePorts(overrides: Partial<SyncCoordinatorPorts> = {}): CountedPorts {
   const events: string[] = [];
   let appStateListener: ((state: 'active' | 'background') => void) | undefined;
   let wakeupListener: (() => void) | undefined;
@@ -44,6 +44,7 @@ function makePorts(): CountedPorts {
       };
     },
     debounceMs: 0,
+    ...overrides,
   };
 
   return {
@@ -129,6 +130,19 @@ describe('SyncCoordinator', () => {
     ports.triggerAppState('background');
     await jest.runAllTimersAsync();
     expect(ports.counts.syncCalls).toBe(2);
+  });
+
+  it('reports every completed sync through onSyncResult', async () => {
+    const results: number[] = [];
+    const ports = makePorts({
+      onSyncResult: summary => results.push(summary.failures.length),
+    });
+    const coordinator = new SyncCoordinator(ports);
+
+    coordinator.start('project-1');
+    await jest.runAllTimersAsync();
+
+    expect(results).toEqual([0]);
   });
 
   it('keeps only one active coordinator per project', async () => {

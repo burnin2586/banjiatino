@@ -8,6 +8,8 @@ export type SyncCoordinatorPorts = {
   subscribeAppState(listener: (state: 'active' | 'background') => void): () => void;
   subscribeWakeup(listener: () => void): () => void;
   subscribeLocalCommit(listener: () => void): () => void;
+  /** Observes every completed sync so failures stay visible to the user. */
+  onSyncResult?: (summary: SyncSummary) => void;
   debounceMs?: number;
 };
 
@@ -77,7 +79,9 @@ export class SyncCoordinator {
 
     this.syncing = true;
     try {
-      return await this.ports.engine.sync(projectId);
+      const summary = await this.ports.engine.sync(projectId);
+      if (summary) this.ports.onSyncResult?.(summary);
+      return summary;
     } catch {
       return undefined;
     } finally {

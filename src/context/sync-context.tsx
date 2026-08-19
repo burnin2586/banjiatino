@@ -48,6 +48,7 @@ async function readCounts(projectId: string): Promise<SyncStatusCounts> {
 
 export function SyncProvider({ projectId, children }: { projectId: string; children: ReactNode }) {
   const [counts, setCounts] = useState<SyncStatusCounts>({ pending: 0, failed: 0, needsAttention: 0 });
+  const [lastSyncFailed, setLastSyncFailed] = useState(false);
   const engineRef = useRef<SyncEngine | null>(null);
   const coordinatorRef = useRef<SyncCoordinator | null>(null);
 
@@ -70,6 +71,10 @@ export function SyncProvider({ projectId, children }: { projectId: string; child
       subscribeWakeup: listener => openProjectWakeupChannel(projectId, listener),
       // Local commits already publish through the per-project notification bus.
       subscribeLocalCommit: listener => subscribeToProject(projectId, listener),
+      onSyncResult: summary => {
+        setLastSyncFailed(summary.failures.length > 0);
+        refresh();
+      },
     });
     coordinatorRef.current = coordinator;
     refresh();
@@ -89,8 +94,8 @@ export function SyncProvider({ projectId, children }: { projectId: string; child
   }, [projectId]);
 
   const value = useMemo<SyncContextValue>(
-    () => ({ ...counts, retry }),
-    [counts, retry],
+    () => ({ ...counts, failed: counts.failed + (lastSyncFailed ? 1 : 0), retry }),
+    [counts, lastSyncFailed, retry],
   );
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;

@@ -175,6 +175,7 @@ export class ProjectDataController {
   }
 
   async load(): Promise<void> {
+    await this.ensureProjectRow();
     const unsubscribe = subscribeToProject(this.projectId, () => {
       // Coalesce wakeup-triggered reloads so late events never race a closed database.
       this.pendingRefresh = this.pendingRefresh
@@ -189,6 +190,20 @@ export class ProjectDataController {
   }
 
   private unsubscribeProject?: () => void;
+
+  /**
+   * Joined devices learn the project id from the invitation before any local row exists;
+   * every table references this row, so create a placeholder before the first pull.
+   */
+  private async ensureProjectRow(): Promise<void> {
+    const nowIso = new Date().toISOString();
+    await executeDatabaseQuery(
+      `INSERT INTO moving_projects (id, name, created_by, created_at, updated_at)
+       VALUES (?, '家庭搬家项目', 'local', ?, ?)
+       ON CONFLICT(id) DO NOTHING`,
+      [this.projectId, nowIso, nowIso],
+    );
+  }
 
   async dispose(): Promise<void> {
     this.disposed = true;

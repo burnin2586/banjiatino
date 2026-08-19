@@ -66,6 +66,17 @@ describe('ProjectDataController', () => {
     if (database) await closeTestDatabase(database);
   });
 
+  it('works on a joined device whose local project row does not exist yet', async () => {
+    await database.execute('DELETE FROM moving_projects WHERE id = ?', [projectId]);
+    await controller.load();
+
+    await controller.addRoom({ name: '旧厨房', color: '#BFDCCB', kind: 'source' });
+
+    expect(controller.getState().state.rooms.map(room => room.name)).toEqual(['旧厨房']);
+    const projects = await database.execute('SELECT COUNT(*) AS value FROM moving_projects');
+    expect(Number(projects.rows[0].value)).toBe(1);
+  });
+
   it('exposes repository rows through the shared moving state', async () => {
     await controller.addRoom({ name: '旧厨房', color: '#BFDCCB', kind: 'source' });
     await controller.addBox({
