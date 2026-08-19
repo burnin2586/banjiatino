@@ -11,28 +11,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, PageHeader, PrimaryButton, Screen, TextButton } from '@/components/ui-kit';
 import { AppColors, AppRadius, AppSpacing, AppTypography } from '@/constants/app-theme';
 import { useSession } from '@/context/session-context';
-import {
-  classifyInvitationError,
-  InvitationGateway,
-  type InvitationFailureCode,
-} from '@/features/collaboration/invitation-gateway';
-import { ensureAnonymousSession, saveCachedProject } from '@/services/supabase/bootstrap-ports';
-import { getSupabaseClient } from '@/services/supabase/client';
+import { INVITATION_FAILURE_COPY } from '@/features/collaboration/invitation-copy';
+import type { InvitationFailureCode } from '@/features/collaboration/invitation-errors';
+import { createSupabaseJoinFlowPorts } from '@/features/collaboration/join-flow-supabase';
+import { joinProjectWithToken } from '@/features/collaboration/join-flow';
 
 type JoinState =
   | { phase: 'joining' }
   | { phase: 'needName' }
   | { phase: 'joined'; projectName: string }
   | { phase: 'failed'; code: InvitationFailureCode };
-
-const FAILURE_COPY: Record<InvitationFailureCode, string> = {
-  expired: '这个邀请链接已过期（7 天有效），请让家人重新生成一个。',
-  revoked: '这个邀请链接已被撤销，请让家人重新发送。',
-  not_found: '没有找到对应的搬家项目，请确认链接完整。',
-  archived: '这个搬家项目已归档，无法加入。',
-  offline: '加入需要联网，请检查网络后重试。',
-  unknown: '加入没有成功，请重试一次。',
-};
 
 export function JoinProjectScreen({ token, onFinished }: { token: string; onFinished: () => void }) {
   const { retry } = useSession();
@@ -43,29 +31,17 @@ export function JoinProjectScreen({ token, onFinished }: { token: string; onFini
   const accept = useCallback(async (name?: string) => {
     setSubmitting(true);
     try {
-      const client = getSupabaseClient();
-      const gateway = new InvitationGateway(client);
-      await ensureAnonymousSession(client);
-
-      const { data: profile } = await client
-        .from('profiles')
-        .select('display_name')
-        .maybeSingle();
-      if (!profile && !name) {
+      const outcome = await joinProjectWithToken(createSupabaseJoinFlowPorts(), {
+        token,
+        ...(name !== undefined ? { displayName: name } : {}),
+      });
+      if (outcome.status === 'joined') {
+        setState({ phase: 'joined', projectName: outcome.projectName });
+      } else if (outcome.status === 'needName') {
         setState({ phase: 'needName' });
-        return;
+      } else {
+        setState({ phase: 'failed', code: outcome.code });
       }
-
-      const { projectId } = await gateway.acceptInvitation(token, name);
-      const { data: project } = await getSupabaseClient()
-        .from('moving_projects')
-        .select('name')
-        .eq('id', projectId)
-        .single();
-      await saveCachedProject(projectId);
-      setState({ phase: 'joined', projectName: (project?.name as string | undefined) ?? '搬家项目' });
-    } catch (error) {
-      setState({ phase: 'failed', code: classifyInvitationError(error) });
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +70,7 @@ export function JoinProjectScreen({ token, onFinished }: { token: string; onFini
 
           {state.phase === 'failed' && (
             <View>
-              <Text style={styles.notice}>{FAILURE_COPY[state.code]}</Text>
+              <Text style={styles.notice}>{INVITATION_FAILURE_COPY[state.code]}</Text>
               {(state.code === 'offline' || state.code === 'unknown') && (
                 <PrimaryButton
                   label="重试"

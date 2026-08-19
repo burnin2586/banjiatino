@@ -1,4 +1,4 @@
-import { buildInvitationUrl, parseInvitationUrl } from './invite-links';
+import { buildInvitationUrl, extractInvitationToken, parseInvitationUrl } from './invite-links';
 
 const host = 'https://move.example.com';
 
@@ -43,5 +43,30 @@ describe('buildInvitationUrl', () => {
     const url = buildInvitationUrl(host, 'roundTrip_TOKEN-42');
     expect(url).toBe(`${host}/invite/roundTrip_TOKEN-42`);
     expect(parseInvitationUrl(url, host)).toEqual({ token: 'roundTrip_TOKEN-42' });
+  });
+});
+
+describe('extractInvitationToken', () => {
+  it('accepts a full invitation URL', () => {
+    expect(extractInvitationToken('https://move.example.com/invite/abc_DEF-123', host))
+      .toBe('abc_DEF-123');
+  });
+
+  it('accepts a bare base64url token', () => {
+    expect(extractInvitationToken('abc_DEF-123', host)).toBe('abc_DEF-123');
+  });
+
+  it('normalizes surrounding whitespace', () => {
+    expect(extractInvitationToken('  abc_DEF-123 \n', host)).toBe('abc_DEF-123');
+  });
+
+  it('rejects URLs from other hosts', () => {
+    expect(extractInvitationToken('https://evil.com/invite/abc_DEF-123', host)).toBeNull();
+  });
+
+  it('rejects empty and invalid input', () => {
+    expect(extractInvitationToken('', host)).toBeNull();
+    expect(extractInvitationToken('has space', host)).toBeNull();
+    expect(extractInvitationToken('bad+chars!', host)).toBeNull();
   });
 });

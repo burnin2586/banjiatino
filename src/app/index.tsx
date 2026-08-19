@@ -14,6 +14,7 @@ import {
   StatusBadge,
   TextButton,
 } from '@/components/ui-kit';
+import { InviteFamilyCard } from '@/components/invite-family-card';
 import { SyncBanner } from '@/components/sync-banner';
 import { RoomManager } from '@/components/room-manager';
 import { DateWheel } from '@/components/date-wheel';
@@ -88,6 +89,7 @@ export default function HomeScreen() {
       />
 
       <SyncBanner />
+      <InviteFamilyCard />
 
       {movingDate === null ? (
         <Card style={styles.countdownCard}>
