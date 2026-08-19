@@ -90,7 +90,14 @@ const TABLE_BY_ENTITY: Record<EntityType, string> = {
 };
 
 function describeError(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'object' && error !== null) {
+    const record = error as { message?: unknown; code?: unknown };
+    const message = typeof record.message === 'string' ? record.message : undefined;
+    const code = typeof record.code === 'string' ? record.code : undefined;
+    return [code, message].filter(Boolean).join(': ') || JSON.stringify(error);
+  }
+  return String(error);
 }
 
 /**

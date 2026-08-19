@@ -30,6 +30,7 @@ import type {
   RoomKind,
   StoragePhoto,
 } from '@/types/moving';
+import { randomUuid } from '@/utils/uuid';
 import { buildLookups, type Lookups } from './moving-lookups';
 
 const BOX_STATUS_TO_PROTOCOL: Record<BoxStatus, string> = {
@@ -89,17 +90,6 @@ export type ProjectDataControllerOptions = {
   storage?: KeyValueStorage;
 };
 
-function randomUuid(): string {
-  const globalCrypto = (globalThis as Record<string, unknown>).crypto as
-    | { randomUUID?: () => string }
-    | undefined;
-  if (globalCrypto?.randomUUID) return globalCrypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, character => {
-    const random = Math.random() * 16;
-    const value = character === 'x' ? random : (random & 0x3) | 0x8;
-    return value.toString(16);
-  });
-}
 
 function toMilliseconds(value: unknown): number {
   if (typeof value === 'number') return value;
