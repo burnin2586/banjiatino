@@ -18,17 +18,17 @@ const validOperation = {
 
 describe('decodeOutboxOperation', () => {
   it('accepts a supported entity type and action', () => {
-    expect(decodeOutboxOperation(validOperation)).toEqual(validOperation);
+    expect(decodeOutboxOperation({ operation: validOperation })).toEqual(validOperation);
   });
 
   it('rejects an unknown entity type', () => {
-    expect(() => decodeOutboxOperation({ ...validOperation, entityType: 'project' })).toThrow(
+    expect(() => decodeOutboxOperation({ operation: { ...validOperation, entityType: 'project' } })).toThrow(
       'entityType',
     );
   });
 
   it('rejects an unknown operation action', () => {
-    expect(() => decodeOutboxOperation({ ...validOperation, action: 'hard_delete' })).toThrow(
+    expect(() => decodeOutboxOperation({ operation: { ...validOperation, action: 'hard_delete' } })).toThrow(
       'action',
     );
   });
@@ -42,13 +42,15 @@ describe('decodeApplyOperationResult', () => {
       operationId: validOperation.operationId,
     };
 
-    expect(decodeApplyOperationResult(result)).toEqual(result);
+    expect(decodeApplyOperationResult({ result })).toEqual(result);
   });
 
   it('rejects a result without a cursor', () => {
     expect(() => decodeApplyOperationResult({
-      entity: { id: validOperation.entityId, version: 1 },
-      operationId: validOperation.operationId,
+      result: {
+        entity: { id: validOperation.entityId, version: 1 },
+        operationId: validOperation.operationId,
+      },
     })).toThrow('cursor');
   });
 });
@@ -68,19 +70,18 @@ describe('decodeProjectChangePage', () => {
   it('accepts ordered change envelopes and the next cursor', () => {
     const page = { changes: [validChange], nextCursor: 9 };
 
-    expect(decodeProjectChangePage(page)).toEqual(page);
+    expect(decodeProjectChangePage({ page })).toEqual(page);
   });
 
   it('rejects a change envelope without a cursor', () => {
     const { cursor: _cursor, ...changeWithoutCursor } = validChange;
 
     expect(() => decodeProjectChangePage({
-      changes: [changeWithoutCursor],
-      nextCursor: 9,
+      page: { changes: [changeWithoutCursor], nextCursor: 9 },
     })).toThrow('changes[0].cursor');
   });
 
   it('rejects a page without its next cursor', () => {
-    expect(() => decodeProjectChangePage({ changes: [validChange] })).toThrow('nextCursor');
+    expect(() => decodeProjectChangePage({ page: { changes: [validChange] } })).toThrow('nextCursor');
   });
 });

@@ -34,7 +34,20 @@ export class SupabaseSyncGateway {
     });
 
     if (error) throw error;
-    return decodeApplyOperationResult({ result: data });
+    try {
+      return decodeApplyOperationResult({ result: data });
+    } catch (decodeError) {
+      const raw = (() => {
+        try {
+          return JSON.stringify(data).slice(0, 300);
+        } catch {
+          return String(data).slice(0, 300);
+        }
+      })();
+      throw new Error(
+        `${decodeError instanceof Error ? decodeError.message : String(decodeError)} | typeof=${typeof data} | raw=${raw}`,
+      );
+    }
   }
 
   async pullChanges(afterCursor: number, pageSize: number): Promise<ProjectChangePage> {
@@ -45,6 +58,19 @@ export class SupabaseSyncGateway {
     });
 
     if (error) throw error;
-    return decodeProjectChangePage({ page: data });
+    try {
+      return decodeProjectChangePage({ page: data });
+    } catch (decodeError) {
+      const raw = (() => {
+        try {
+          return JSON.stringify(data).slice(0, 300);
+        } catch {
+          return String(data).slice(0, 300);
+        }
+      })();
+      throw new Error(
+        `${decodeError instanceof Error ? decodeError.message : String(decodeError)} | typeof=${typeof data} | raw=${raw}`,
+      );
+    }
   }
 }

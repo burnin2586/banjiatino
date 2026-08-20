@@ -64,12 +64,19 @@ const operationActions = new Set<OperationAction>([
   'restore',
 ]);
 
-function readRecord(value: unknown, path: string): Record<string, unknown> {
+/** Validates an already-fetched value is a plain object. */
+function expectRecord(value: unknown, path: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${path} must be an object`);
   }
 
   return value as Record<string, unknown>;
+}
+
+/** Fetches record[key] and validates it is a plain object. */
+function readRecord(container: unknown, key: string, path = key): Record<string, unknown> {
+  const holder = expectRecord(container, `${path} container`);
+  return expectRecord(holder[key], path);
 }
 
 function readString(record: Record<string, unknown>, key: string, path = key): string {
@@ -121,7 +128,7 @@ export function decodeOutboxOperation(value: unknown): OutboxOperation {
     entityId: readString(operation, 'entityId'),
     action: action as OperationAction,
     baseVersion: readNonNegativeInteger(operation, 'baseVersion'),
-    payload: readRecord(operation.payload, 'payload'),
+    payload: expectRecord(operation.payload, 'payload'),
     createdAt: readNonNegativeInteger(operation, 'createdAt'),
     attemptCount: readNonNegativeInteger(operation, 'attemptCount'),
   };
@@ -131,7 +138,7 @@ export function decodeApplyOperationResult(value: unknown): ApplyOperationResult
   const result = readRecord(value, 'result');
 
   return {
-    entity: readRecord(result.entity, 'entity'),
+    entity: expectRecord(result.entity, 'entity'),
     cursor: readNonNegativeInteger(result, 'cursor'),
     operationId: readString(result, 'operationId'),
   };
@@ -139,7 +146,7 @@ export function decodeApplyOperationResult(value: unknown): ApplyOperationResult
 
 function decodeProjectChange(value: unknown, index: number): ProjectChange {
   const path = `changes[${index}]`;
-  const change = readRecord(value, path);
+  const change = expectRecord(value, path);
   const changeType = readString(change, 'changeType', `${path}.changeType`);
 
   if (changeType !== 'upsert' && changeType !== 'delete') {
@@ -153,7 +160,7 @@ function decodeProjectChange(value: unknown, index: number): ProjectChange {
     entityId: readString(change, 'entityId', `${path}.entityId`),
     changeType,
     entityVersion: readNonNegativeInteger(change, 'entityVersion', `${path}.entityVersion`),
-    payload: readRecord(change.payload, `${path}.payload`),
+    payload: expectRecord(change.payload, `${path}.payload`),
     createdAt: readString(change, 'createdAt', `${path}.createdAt`),
   };
 }
