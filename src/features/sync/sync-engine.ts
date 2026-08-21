@@ -1,6 +1,7 @@
 import { OutboxRepository } from '@/repositories/outbox-repository';
 import { SyncStateRepository } from '@/repositories/sync-state-repository';
 import {
+  notifyProjectCommitted,
   withDatabaseTransaction,
   type DatabaseTransaction,
 } from '@/storage/database/connection';
@@ -137,8 +138,9 @@ export class SyncEngine {
         }
 
         try {
-          await this.gateway.applyOperation(operation);
+          const confirmation = await this.gateway.applyOperation(operation);
           await this.outbox.delete(operation.operationId);
+          await this.applyServerConfirmation(projectId, operation.entityType, confirmation);
           summary.pushed += 1;
         } catch (error) {
           const { code, retryable } = classifyGatewayError(error);
@@ -229,6 +231,42 @@ export class SyncEngine {
       skippedPendingBackoff: flushed.skippedPendingBackoff,
       skippedByMerge: pulled.skippedByMerge,
     };
+  }
+
+  /**
+   * A successful apply is the server's authoritative receipt (version, box number); write
+   * it onto the local row immediately instead of waiting for the next pull to catch up.
+   */
+  private async applyServerConfirmation(
+    projectId: string,
+    entityType: OutboxOperation['entityType'],
+    confirmation: unknown,
+  ): Promise<void> {
+    const envelope = confirmation as { entity?: unknown } | null;
+    const entity = envelope?.entity as
+      | { id?: unknown; version?: number; display_number?: number | null }
+      | undefined;
+    if (!entity || typeof entity.id !== 'string') return;
+    const entityId = entity.id;
+
+    const table = TABLE_BY_ENTITY[entityType];
+    const version = typeof entity.version === 'number' ? entity.version : null;
+    if (version === null) return;
+
+    await withDatabaseTransaction(async tx => {
+      if (entityType === 'box') {
+        await tx.execute(
+          `UPDATE ${table} SET version = ?, display_number = ?, sync_status = 'synced' WHERE project_id = ? AND id = ?`,
+          [version, entity.display_number ?? null, projectId, entityId],
+        );
+      } else {
+        await tx.execute(
+          `UPDATE ${table} SET version = ?, sync_status = 'synced' WHERE project_id = ? AND id = ?`,
+          [version, projectId, entityId],
+        );
+      }
+    });
+    notifyProjectCommitted(projectId);
   }
 
   private async applyRemoteChange(

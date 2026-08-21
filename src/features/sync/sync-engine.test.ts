@@ -42,6 +42,7 @@ class FakeGateway implements SyncGateway {
   readonly calls: string[] = [];
   pages: ProjectChangePage[] = [];
   failures = new Map<string, Error>();
+  confirmations = new Map<string, Record<string, unknown>>();
 
   async applyOperation(operation: OutboxOperation): Promise<ApplyOperationResult> {
     this.calls.push(`apply:${operation.operationId}`);
@@ -49,7 +50,7 @@ class FakeGateway implements SyncGateway {
     if (failure) throw failure;
     this.appliedOperations.push(operation.operationId);
     return {
-      entity: { id: operation.entityId },
+      entity: this.confirmations.get(operation.operationId) ?? { id: operation.entityId },
       cursor: this.appliedOperations.length,
       operationId: operation.operationId,
     };
@@ -149,6 +150,38 @@ describe('SyncEngine', () => {
     expect(again.pushed).toBe(0);
     expect(again.skippedPendingBackoff).toBe(0);
     expect(again.failures).toEqual([]);
+  });
+
+  it('applies the server confirmation onto the local row after a successful push', async () => {
+    await withDatabaseTransaction(async tx => {
+      await tx.execute(
+        `INSERT INTO moving_boxes (id, project_id, label, status, created_by, updated_by, created_at, updated_at)
+         VALUES ('box-confirm', ?, '餐具', 'draft', 'user-1', 'user-1', ?, ?)`,
+        [projectId, new Date().toISOString(), new Date().toISOString()],
+      );
+      await outbox.insert(tx, {
+        operationId: 'op-confirm',
+        projectId,
+        entityType: 'box',
+        entityId: 'box-confirm',
+        action: 'create',
+        baseVersion: 0,
+        payload: { label: '餐具' },
+        createdAt: clock + 1,
+        attemptCount: 0,
+      });
+    });
+    gateway.confirmations = new Map([
+      ['op-confirm', { id: 'box-confirm', version: 1, display_number: 7, label: '餐具' }],
+    ]);
+
+    await engine.flush(projectId);
+
+    const rows = await database.execute(
+      'SELECT display_number, sync_status, version FROM moving_boxes WHERE id = ?',
+      ['box-confirm'],
+    );
+    expect(rows.rows[0]).toEqual({ display_number: 7, sync_status: 'synced', version: 1 });
   });
 
   it('isolates one failed operation from later independent entities', async () => {
