@@ -1,5 +1,10 @@
 import type { ApplyOperationResult, OutboxOperation, ProjectChange, ProjectChangePage } from './sync-types';
-import { resetDatabaseForTesting, setDatabaseForTesting, withDatabaseTransaction } from '@/storage/database/connection';
+import * as connection from '@/storage/database/connection';
+import {
+  resetDatabaseForTesting,
+  setDatabaseForTesting,
+  withDatabaseTransaction,
+} from '@/storage/database/connection';
 import {
   closeTestDatabase,
   createTestDatabase,
@@ -192,6 +197,16 @@ describe('SyncEngine', () => {
 
     expect(gateway.appliedOperations).toEqual(['op-1', 'op-3']);
     expect(summary.failures.map(failure => failure.operationId)).toEqual(['op-2']);
+  });
+
+  it('notifies project subscribers after applying pulled rows', async () => {
+    const notifier = jest.spyOn(connection, 'notifyProjectCommitted');
+    gateway.pages = [{ changes: [change(1, 'room', 'room-notify', { name: '书房' })], nextCursor: 1 }];
+
+    await engine.pull(projectId);
+
+    expect(notifier).toHaveBeenCalledWith(projectId);
+    notifier.mockRestore();
   });
 
   it('pushes pending operations before pulling during sync', async () => {

@@ -182,6 +182,7 @@ export class SyncEngine {
         if (page.changes.length === 0) break;
 
         let applied = 0;
+        let pageCommitted = false;
         try {
           await withDatabaseTransaction(async tx => {
             let pageSkipped = 0;
@@ -200,6 +201,7 @@ export class SyncEngine {
               [projectId, page.nextCursor, new Date().toISOString()],
             );
           });
+          pageCommitted = applied > 0;
         } catch (error) {
           const { code, retryable } = classifyGatewayError(error);
           summary.failures.push({
@@ -213,6 +215,8 @@ export class SyncEngine {
 
         summary.pulled += applied;
         summary.nextCursor = page.nextCursor;
+        // Pulled rows are new local data; wake project subscribers so screens re-render.
+        if (pageCommitted) notifyProjectCommitted(projectId);
         if (page.changes.length < this.pageSize) break;
       }
 
