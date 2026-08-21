@@ -8,6 +8,11 @@ export type ItemStatus = (typeof ITEM_STATUSES)[number];
 export type ItemAction = (typeof ITEM_ACTIONS)[number];
 export type RoomKind = (typeof ROOM_KINDS)[number];
 
+/** 展示箱号；离线新建、服务端尚未分配编号的箱子显示“待编号”。 */
+export function formatBoxCode(box: { code: string | null }): string {
+  return box.code ?? '待编号';
+}
+
 export type Room = {
   id: string;
   name: string;
@@ -20,7 +25,8 @@ export type MarkerRect = { x: number; y: number; w: number; h: number };
 
 export type MovingBox = {
   id: string;
-  code: string;
+  /** 正式箱号由服务端分配；离线新建时为 null，界面显示“待编号”。 */
+  code: string | null;
   name: string;
   sourceRoomId: string;
   destinationRoomId: string;

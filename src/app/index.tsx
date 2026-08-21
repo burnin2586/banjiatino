@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { formatBoxCode } from '@/types/moving';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -13,6 +14,8 @@ import {
   StatusBadge,
   TextButton,
 } from '@/components/ui-kit';
+import { InviteFamilyCard } from '@/components/invite-family-card';
+import { SyncBanner } from '@/components/sync-banner';
 import { RoomManager } from '@/components/room-manager';
 import { DateWheel } from '@/components/date-wheel';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
@@ -84,6 +87,9 @@ export default function HomeScreen() {
         title="一件不落地搬走"
         description="不用靠脑子记，让每件东西都有明确去向。"
       />
+
+      <SyncBanner />
+      <InviteFamilyCard />
 
       {movingDate === null ? (
         <Card style={styles.countdownCard}>
@@ -209,7 +215,7 @@ export default function HomeScreen() {
                   <Text style={styles.boxEmoji}>□</Text>
                 </View>
                 <View style={styles.boxText}>
-                  <Text style={styles.boxCode}>{box.code}</Text>
+                  <Text style={styles.boxCode}>{formatBoxCode(box)}</Text>
                   <Text style={styles.boxName}>{box.name}</Text>
                   <Text style={styles.boxMeta}>
                     {sourceRoom?.name ?? '未分区'} → {destinationRoom?.name ?? '未设置'} ·{' '}

@@ -31,7 +31,7 @@ export function itemStatusForBox(status: BoxStatus): ItemStatus {
 /** 根据现有箱号生成下一个连续箱号（BOX-001、BOX-002…）。 */
 export function nextBoxCode(boxes: MovingBox[]): string {
   const largest = boxes.reduce((acc, box) => {
-    const parsed = Number(box.code.replace(/\D/g, ''));
+    const parsed = Number((box.code ?? '').replace(/\D/g, ''));
     return Number.isFinite(parsed) ? Math.max(acc, parsed) : acc;
   }, 0);
   return `BOX-${String(largest + 1).padStart(3, '0')}`;

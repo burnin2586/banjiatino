@@ -18,7 +18,7 @@ import {
 import { TemplatePicker } from '@/components/template-picker';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
-import {
+import { formatBoxCode,
   ITEM_ACTIONS,
   ITEM_STATUSES,
   type ItemAction,
@@ -194,7 +194,7 @@ export default function ItemsScreen() {
                       {!isMoving
                         ? item.action
                         : box
-                          ? `${box.code} · ${destinationRoom?.name ?? '未设置目标房间'}`
+                          ? `${formatBoxCode(box)} · ${destinationRoom?.name ?? '未设置目标房间'}`
                           : '尚未分配箱子'}
                     </Text>
                     {isMoving ? (
@@ -302,7 +302,7 @@ export default function ItemsScreen() {
               {state.boxes.map((box) => (
                 <ChoiceChip
                   key={box.id}
-                  label={`${box.code} ${box.name}`}
+                  label={`${formatBoxCode(box)} ${box.name}`}
                   selected={boxId === box.id}
                   onPress={() => setBoxId(box.id)}
                 />

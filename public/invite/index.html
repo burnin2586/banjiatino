@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>加入家庭搬家协作</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 480px; margin: 48px auto; padding: 0 16px; color: #1c2833; }
+    .card { border: 1px solid #d7e3ec; border-radius: 16px; padding: 24px; background: #f3f9ff; }
+    a.btn { display: inline-block; margin-top: 16px; padding: 12px 20px; border-radius: 12px; background: #2f6f9f; color: #fff; text-decoration: none; font-weight: 700; }
+    code { word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>搬家条理 · 家庭协作</h1>
+    <p>你收到了一个搬家协作邀请。这个项目需要在「搬家条理」App 中打开。</p>
+    <p>你的邀请链接（安装 App 后再次点开即可自动加入）：<br /><code id="link"></code></p>
+    <!-- Before an App Store ID exists, show TestFlight instructions from configuration.
+         Replace this block with the store link when published. -->
+    <p><strong>还没有安装？</strong>通过 TestFlight 安装：打开 TestFlight App，输入邀请码或点击管理员提供的 TestFlight 链接。</p>
+    <a class="btn" id="open" href="#">打开 App 加入</a>
+  </div>
+  <script>
+    var url = location.href;
+    document.getElementById('link').textContent = url;
+    document.getElementById('open').href = url;
+  </script>
+</body>
+</html>

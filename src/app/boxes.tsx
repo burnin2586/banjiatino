@@ -23,7 +23,7 @@ import { useMoving } from '@/context/moving-context';
 import { saveStoragePhoto } from '@/logic/photo-store';
 // The Babel ESLint parser does not count type-only references as usage.
 // eslint-disable-next-line no-unused-vars
-import { BOX_STATUSES, type MovingBox } from '@/types/moving';
+import { formatBoxCode, BOX_STATUSES, type MovingBox } from '@/types/moving';
 import type { RootStackParamList } from '@/navigation/types';
 
 import { getMilestoneBoxId } from './boxes-presentation';
@@ -113,7 +113,7 @@ export default function BoxesScreen() {
       contents.length > 0
         ? `箱内 ${contents.length} 类物品会保留，但将变为“未分配箱子”。`
         : '这是一只空箱子。';
-    Alert.alert('删除这个箱子？', `${box.code} · ${box.name}\n${detail}`, [
+    Alert.alert('删除这个箱子？', `${formatBoxCode(box)} · ${box.name}\n${detail}`, [
       { text: '取消', style: 'cancel' },
       { text: '确认删除', style: 'destructive', onPress: () => deleteBox(box.id) },
     ]);
@@ -233,7 +233,7 @@ export default function BoxesScreen() {
                   <Card key={box.id}>
                     <View style={styles.boxHeader}>
                       <View style={styles.codeWrap}>
-                        <Text style={styles.boxCode}>{box.code}</Text>
+                        <Text style={styles.boxCode}>{formatBoxCode(box)}</Text>
                         <Text style={styles.boxName}>{box.name}</Text>
                       </View>
                       <StatusBadge

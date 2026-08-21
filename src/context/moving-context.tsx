@@ -12,6 +12,7 @@ import {
 import { initialMovingState } from '@/data/initial-data';
 import { type ItemTemplateEntry } from '@/data/item-templates';
 import { TASK_PRESETS } from '@/data/task-presets';
+import { LEGACY_MOVING_STORAGE_KEY } from '@/features/collaboration/legacy-import';
 import { buildItemsFromTemplate } from '@/logic/item-template';
 import { itemStatusForBox, migrateStoredState, nextBoxCode } from '@/logic/moving';
 import { deleteStoragePhotoFile } from '@/logic/photo-store';
@@ -29,7 +30,7 @@ import type {
   RoomKind,
 } from '@/types/moving';
 
-const STORAGE_KEY = 'banjiatino-moving-state-v1';
+const STORAGE_KEY = LEGACY_MOVING_STORAGE_KEY;
 
 type RoomInput = {
   name: string;
@@ -56,14 +57,14 @@ type ItemInput = {
   note?: string;
 };
 
-export type Lookups = {
-  roomById: Map<string, Room>;
-  boxById: Map<string, MovingBox>;
-  itemsByBox: Map<string, MovingItem[]>;
-  boxesByStoragePhoto: Map<string, MovingBox[]>;
-  sourceRooms: Room[];
-  destinationRooms: Room[];
-};
+import { useSession } from '@/context/session-context';
+import {
+  ProjectDataProvider,
+  useProjectData,
+} from '@/context/project-data-context';
+import { buildLookups, type Lookups } from './moving-lookups';
+
+export type { Lookups };
 
 type MovingContextValue = {
   state: MovingState;
@@ -104,7 +105,7 @@ function createId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function MovingProvider({ children }: PropsWithChildren) {
+function LegacyMovingProvider({ children }: PropsWithChildren) {
   const [state, setState] = useState<MovingState>(initialMovingState);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -539,49 +540,7 @@ export function MovingProvider({ children }: PropsWithChildren) {
     }));
   }, [updateState]);
 
-  const lookups = useMemo<Lookups>(() => {
-    const roomById = new Map<string, Room>();
-    const boxById = new Map<string, MovingBox>();
-    const itemsByBox = new Map<string, MovingItem[]>();
-    const boxesByStoragePhoto = new Map<string, MovingBox[]>();
-
-    for (const room of state.rooms) {
-      roomById.set(room.id, room);
-    }
-    for (const box of state.boxes) {
-      boxById.set(box.id, box);
-    }
-    for (const item of state.items) {
-      if (!item.boxId) continue;
-      const list = itemsByBox.get(item.boxId);
-      if (list) {
-        list.push(item);
-      } else {
-        itemsByBox.set(item.boxId, [item]);
-      }
-    }
-    for (const box of state.boxes) {
-      if (!box.storagePhotoId) continue;
-      const list = boxesByStoragePhoto.get(box.storagePhotoId);
-      if (list) {
-        list.push(box);
-      } else {
-        boxesByStoragePhoto.set(box.storagePhotoId, [box]);
-      }
-    }
-
-    const sortByOrder = (a: Room, b: Room) => a.order - b.order;
-    return {
-      roomById,
-      boxById,
-      itemsByBox,
-      boxesByStoragePhoto,
-      sourceRooms: state.rooms.filter((room) => room.kind === 'source').sort(sortByOrder),
-      destinationRooms: state.rooms
-        .filter((room) => room.kind === 'destination')
-        .sort(sortByOrder),
-    };
-  }, [state.rooms, state.boxes, state.items]);
+  const lookups = useMemo<Lookups>(() => buildLookups(state), [state]);
 
   const value = useMemo(
     () => ({
@@ -645,6 +604,97 @@ export function MovingProvider({ children }: PropsWithChildren) {
   );
 
   return <MovingContext.Provider value={value}>{children}</MovingContext.Provider>;
+}
+
+type ProjectDataAdapterProps = PropsWithChildren;
+
+/** Bridges the repository-backed collaboration controller onto the legacy useMoving() surface. */
+function ProjectDataAdapter({ children }: ProjectDataAdapterProps) {
+  const { controller, snapshot } = useProjectData();
+  const { state, isLoading, lookups } = snapshot;
+
+  const value = useMemo<MovingContextValue>(() => {
+    const deleteRoom = (roomId: string) => {
+      const inUse = state.boxes.some(
+        box => box.sourceRoomId === roomId || box.destinationRoomId === roomId,
+      );
+      if (inUse) return false;
+      void controller.deleteRoom(roomId);
+      return true;
+    };
+
+    return {
+      state,
+      isLoading,
+      lookups,
+      addRoom: input => void controller.addRoom(input),
+      updateRoom: (roomId, input) => void controller.updateRoom(roomId, input),
+      deleteRoom,
+      addBox: input => void controller.addBox(input),
+      updateBox: (boxId, input) => void controller.updateBox(boxId, input),
+      deleteBox: boxId => void controller.deleteBox(boxId),
+      setBoxStatus: (boxId, status) => void controller.setBoxStatus(boxId, status),
+      addItem: input => void controller.addItem(input),
+      updateItem: (itemId, input) => void controller.updateItem(itemId, input),
+      deleteItem: itemId => void controller.deleteItem(itemId),
+      setItemStatus: (itemId, status) => void controller.setItemStatus(itemId, status),
+      addStoragePhoto: (imageUri, title) => {
+        const pending = controller.addStoragePhoto(imageUri, title);
+        void pending.catch(() => undefined);
+        return `pending-${Date.now()}`;
+      },
+      deleteStoragePhoto: photoId => controller.deleteStoragePhoto(photoId),
+      setBoxMarker: (boxId, photoId, rect) => void controller.setBoxMarker(boxId, photoId, rect),
+      clearBoxMarker: boxId => void controller.clearBoxMarker(boxId),
+      setMovingDate: date => void controller.setMovingDate(date),
+      addTask: input => void controller.addTask(input),
+      updateTask: (taskId, input) => void controller.updateTask(taskId, input),
+      deleteTask: taskId => void controller.deleteTask(taskId),
+      toggleTask: taskId => {
+        const task = state.tasks.find(candidate => candidate.id === taskId);
+        if (task) void controller.setTaskDone(taskId, !task.done);
+      },
+      importTaskPresets: () => {
+        for (const seed of buildTasksFromPresets(TASK_PRESETS)) {
+          void controller.addTask(seed);
+        }
+      },
+      addItemsFromTemplate: (entries, roomName) => {
+        for (const item of buildItemsFromTemplate(entries, roomName)) {
+          void controller.addItem(item);
+        }
+      },
+      resetToDemo: () => undefined,
+      startFresh: () => {
+        for (const room of state.rooms) void controller.deleteRoom(room.id);
+        for (const box of state.boxes) void controller.deleteBox(box.id);
+        for (const item of state.items) void controller.deleteItem(item.id);
+        for (const task of state.tasks) void controller.deleteTask(task.id);
+      },
+    };
+  }, [controller, state, isLoading, lookups]);
+
+  return <MovingContext.Provider value={value}>{children}</MovingContext.Provider>;
+}
+
+/**
+ * Chooses the data backend: a repository-backed collaboration project when the session has
+ * one, otherwise the original local AsyncStorage flow for pre-collaboration usage.
+ */
+export function MovingProvider({ children }: PropsWithChildren) {
+  const { currentProjectId, identity } = useSession();
+
+  if (currentProjectId) {
+    return (
+      <ProjectDataProvider
+        projectId={currentProjectId}
+        actorId={identity?.userId ?? 'local-user'}>
+        <ProjectDataAdapter>{children}</ProjectDataAdapter>
+      </ProjectDataProvider>
+    );
+  }
+
+  return <LegacyMovingProvider>{children}</LegacyMovingProvider>;
 }
 
 export function useMoving() {

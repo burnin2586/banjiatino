@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Replace YOUR-TEAM-ID and the host with the real signing team and INVITE_BASE_URL host
+	     before device TestFlight builds; simulator builds run unsigned without it. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:lyuboning.com</string>
+	</array>
+</dict>
+</plist>
