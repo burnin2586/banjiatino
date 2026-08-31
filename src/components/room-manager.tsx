@@ -46,7 +46,7 @@ export function RoomManager({ visible, onClose }: { visible: boolean; onClose: (
 
   function saveRoom() {
     if (!name.trim()) {
-      Alert.alert('还差一步', '请填写房间名称。');
+      Alert.alert('请输入房间名称');
       return;
     }
     const duplicate = state.rooms.some(
@@ -56,7 +56,7 @@ export function RoomManager({ visible, onClose }: { visible: boolean; onClose: (
         room.name.trim().toLocaleLowerCase('zh-CN') === name.trim().toLocaleLowerCase('zh-CN'),
     );
     if (duplicate) {
-      Alert.alert('房间已经存在', '同一套房子里不能有两个完全相同的房间名称。');
+      Alert.alert('房间名称已存在');
       return;
     }
 
@@ -80,7 +80,7 @@ export function RoomManager({ visible, onClose }: { visible: boolean; onClose: (
         style: 'destructive',
         onPress: () => {
           if (!deleteRoom(room.id)) {
-            Alert.alert('暂时不能删除', '仍有箱子正在使用这个房间，请先修改相关箱子。');
+            Alert.alert('无法删除房间', '请先修改使用该房间的箱子。');
           }
           if (editingRoomId === room.id) resetForm();
         },
@@ -101,7 +101,7 @@ export function RoomManager({ visible, onClose }: { visible: boolean; onClose: (
 
       <View>
         <SectionTitle
-          title={kind === 'source' ? '从哪里搬出' : '搬到哪里'}
+          title={kind === 'source' ? '旧家房间' : '新家房间'}
           detail={`${rooms.length} 个房间`}
         />
         <View style={styles.roomList}>

@@ -12,6 +12,7 @@ import Config from 'react-native-config';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card, PageHeader, PrimaryButton, Screen, TextButton } from '@/components/ui-kit';
+import { AppIcon } from '@/components/app-icon';
 import { AppColors, AppRadius, AppSpacing, AppTypography } from '@/constants/app-theme';
 import { useSession } from '@/context/session-context';
 import { extractInvitationToken } from '@/features/collaboration/invite-links';
@@ -51,7 +52,7 @@ export function CollaborationOnboardingScreen() {
     const inviteBaseUrl = Config.INVITE_BASE_URL ?? '';
     const token = extractInvitationToken(inviteInput, inviteBaseUrl);
     if (!token) {
-      Alert.alert('邀请码无效', '请粘贴完整的邀请链接，或只粘贴其中的邀请码。');
+      Alert.alert('邀请码无效', '请检查后重试。');
       return;
     }
 
@@ -64,7 +65,7 @@ export function CollaborationOnboardingScreen() {
       if (outcome.status === 'joined') {
         retry();
       } else if (outcome.status === 'needName') {
-        Alert.alert('先填称呼', '请在上方“你的称呼”里填一下怎么称呼你，再加入项目。');
+        Alert.alert('请输入你的称呼');
       } else {
         Alert.alert('加入失败', INVITATION_FAILURE_COPY[outcome.code as InvitationFailureCode]);
       }
@@ -76,10 +77,11 @@ export function CollaborationOnboardingScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <Screen>
-        <PageHeader title="开启家庭搬家协作" />
+        <View style={styles.heroIcon}>
+          <AppIcon color={AppColors.white} name="Users" size={28} strokeWidth={2.2} />
+        </View>
+        <PageHeader title="创建或加入搬家项目" />
         <Card>
-          <Text style={styles.hint}>不用注册，创建后把邀请链接发给家人即可一起整理。</Text>
-
           <Text style={styles.label}>你的称呼</Text>
           <TextInput
             accessibilityLabel="你的称呼"
@@ -91,9 +93,9 @@ export function CollaborationOnboardingScreen() {
             maxLength={80}
           />
 
-          <Text style={styles.label}>搬家项目名称</Text>
+          <Text style={styles.label}>项目名称</Text>
           <TextInput
-            accessibilityLabel="搬家项目名称"
+            accessibilityLabel="项目名称"
             style={styles.input}
             placeholder="例如：搬去浦东的新家"
             placeholderTextColor={AppColors.textMuted}
@@ -103,9 +105,9 @@ export function CollaborationOnboardingScreen() {
           />
 
           <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>导入这台设备上的搬家记录</Text>
+            <Text style={styles.switchLabel}>导入本机记录</Text>
             <Switch
-              accessibilityLabel="导入这台设备上的搬家记录"
+              accessibilityLabel="导入本机记录"
               value={importLegacyData}
               onValueChange={setImportLegacyData}
             />
@@ -124,14 +126,14 @@ export function CollaborationOnboardingScreen() {
             ) : (
               <>
                 <PrimaryButton
-                  label="创建协作项目"
+                  label="创建项目"
                   onPress={() => void handleSubmit()}
                   disabled={!canSubmit}
                 />
                 {status === 'retryable' && <TextButton label="重试" onPress={retry} />}
                 {!manualOpen && (
                   <TextButton
-                    label="用邀请码加入家人项目"
+                    label="使用邀请码"
                     onPress={() => setManualOpen(true)}
                   />
                 )}
@@ -141,7 +143,7 @@ export function CollaborationOnboardingScreen() {
 
           {manualOpen && (
             <View style={styles.manualJoin}>
-              <Text style={styles.label}>粘贴家人发来的邀请链接或邀请码</Text>
+              <Text style={styles.label}>邀请码</Text>
               <TextInput
                 accessibilityLabel="邀请链接或邀请码"
                 style={styles.input}
@@ -170,7 +172,14 @@ export function CollaborationOnboardingScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: AppColors.background },
-  hint: { ...AppTypography.body, color: AppColors.textMuted, marginBottom: AppSpacing.md },
+  heroIcon: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: AppRadius.card,
+    backgroundColor: AppColors.primary,
+  },
   label: { ...AppTypography.caption, color: AppColors.text, marginTop: AppSpacing.sm },
   input: {
     borderWidth: 1,

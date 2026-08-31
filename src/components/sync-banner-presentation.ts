@@ -23,7 +23,7 @@ export function getSyncBannerProps(counts: SyncBannerCounts): SyncBannerProps | 
   if (pending === 0 && failed === 0 && needsAttention === 0) return null;
 
   const parts: string[] = [];
-  if (failed > 0) parts.push('同步失败，点按重试');
+  if (failed > 0) parts.push('同步失败');
   if (pending > 0) parts.push(`${pending} 项待同步`);
   if (needsAttention > 0) parts.push(`${needsAttention} 项需要处理`);
 

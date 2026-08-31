@@ -1,7 +1,7 @@
 export const AppColors = {
   background: '#F3F9FF',
   surface: '#FFFFFF',
-  surfaceMuted: '#F3F9FF',
+  surfaceMuted: '#EAF4FF',
   primary: '#176BDB',
   primaryBright: '#2F80ED',
   primarySoft: '#BFDFFF',
@@ -27,7 +27,7 @@ export const AppShadow = {
   raised: {
     shadowColor: '#176BDB',
     shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.18,
     shadowRadius: 8,
     elevation: 4,
   },

@@ -56,9 +56,9 @@ export function TemplatePicker({
     <ModalSheet title="从模板添加" visible={visible} onClose={close}>
       {!hasSourceRoom ? (
         <EmptyState
-          icon="🏠"
+          icon="Box"
           title="还没有房间"
-          description="请先在「搬家作战台」添加一个旧家房间，再回来从模板导入。"
+          description="请先添加旧家房间。"
         />
       ) : selected === null ? (
         <>

@@ -12,6 +12,7 @@ import {
   SectionTitle,
   StatusBadge,
 } from '@/components/ui-kit';
+import { AppIcon } from '@/components/app-icon';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 
@@ -59,19 +60,15 @@ export default function SearchScreen() {
 
   return (
     <Screen>
-      <PageHeader
-        eyebrow="快速定位"
-        title="东西到底在哪？"
-        description="搜索名称、原位置、箱号或备注，封箱后也不用重新打开。"
-      />
+      <PageHeader title="查找物品" />
 
       <View style={styles.searchBox}>
-        <Text style={styles.searchIcon}>⌕</Text>
+        <AppIcon color={AppColors.textMuted} name="Search" size={20} strokeWidth={2.2} />
         <TextInput
           autoCapitalize="none"
           autoCorrect={false}
           clearButtonMode="while-editing"
-          placeholder="试试搜索：充电器"
+          placeholder="搜索物品、箱号或位置"
           placeholderTextColor={AppColors.textMuted}
           returnKeyType="search"
           style={styles.searchInput}
@@ -81,9 +78,9 @@ export default function SearchScreen() {
       </View>
 
       <Card style={styles.auditCard}>
-        <Text style={styles.auditEyebrow}>搬家清点</Text>
+        <Text style={styles.auditEyebrow}>物品概览</Text>
         <Text style={styles.auditTitle}>
-          {unboxed.length === 0 && notArrived.length === 0 ? '所有物品都已到达' : '还有事项需要确认'}
+          {unboxed.length === 0 && notArrived.length === 0 ? '物品已全部到达' : '待处理'}
         </Text>
         <View style={styles.auditGrid}>
           <AuditMetric value={movingItems.length} label="带走类别" />
@@ -100,15 +97,15 @@ export default function SearchScreen() {
 
         {!query.trim() ? (
           <EmptyState
-            icon="⌕"
-            title="输入一个关键词"
-            description="你可以搜索物品名称、原来的位置、箱号或备注。"
+            icon="Search"
+            title="输入关键词"
+            description="可搜索名称、位置、箱号或备注。"
           />
         ) : results.length === 0 ? (
           <EmptyState
-            icon="?"
+            icon="CircleHelp"
             title="没有找到"
-            description="换一个更短的关键词，或者确认这件物品是否已经录入。"
+            description="更换关键词后重试。"
           />
         ) : (
           <View style={styles.results}>
@@ -154,11 +151,11 @@ export default function SearchScreen() {
                         ? item.action
                         : box
                           ? `${formatBoxCode(box)} · ${box.name}`
-                          : '还没有分配箱子'}
+                          : '未装箱'}
                     </Text>
                     {box ? (
                       <Text style={styles.answerMeta}>
-                        {sourceRoom?.name ?? '未分区'} → {destinationRoom?.name ?? '未设置'} ·{' '}
+                        {sourceRoom?.name ?? '未分区'} 至 {destinationRoom?.name ?? '未设置'} ·{' '}
                         箱子状态：{box.status}
                       </Text>
                     ) : null}

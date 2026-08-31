@@ -25,7 +25,7 @@ export function InviteFamilyCard() {
       const url = buildInvitationUrl(Config.INVITE_BASE_URL ?? '', token);
 
       await Share.share({
-        message: `来和我一起整理搬家吧，点这个链接加入：\n${url}`,
+        message: `加入我的搬家项目：\n${url}`,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -33,7 +33,7 @@ export function InviteFamilyCard() {
         '邀请生成失败',
         /network|fetch|timed?\s*out|connection/i.test(message)
           ? '生成邀请需要联网，请检查网络后重试。'
-          : '刚才没有成功，请稍后再试。',
+          : '请稍后重试。',
       );
     } finally {
       setBusy(false);
@@ -44,10 +44,9 @@ export function InviteFamilyCard() {
     <Card>
       <View style={styles.row}>
         <View style={styles.text}>
-          <Text style={styles.title}>家庭协作</Text>
-          <Text style={styles.hint}>邀请家人加入后，箱子、物品和任务会自动保持同步。</Text>
+          <Text style={styles.title}>邀请家人</Text>
         </View>
-        <PrimaryButton label={busy ? '生成中…' : '邀请家人'} onPress={() => void handleInvite()} disabled={busy} compact />
+        <PrimaryButton label={busy ? '生成中' : '生成邀请'} onPress={() => void handleInvite()} disabled={busy} compact />
       </View>
     </Card>
   );

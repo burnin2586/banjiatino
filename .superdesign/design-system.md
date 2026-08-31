@@ -1,200 +1,168 @@
-# Banjiatino 蓝白立体玩具风设计系统
+# 搬家条理：精进蓝白玩具风设计系统
 
-## Product context and authority
+## 产品目标
 
-Banjiatino is a React Native iOS app for managing a move and preserving memories of previous homes. This document adapts the complete approved specification below into Superdesign-ready context. It is the target visual authority; `.superdesign/init/theme.md` only records the current pre-redesign implementation tokens. Do not change existing functions, navigation structure, or data models during this design phase.
+“搬家条理”是一款 React Native iOS 搬家整理应用。用户需要快速完成四件事：查看进度、记录物品、管理箱子、查找物品。设计应降低搬家过程中的记忆负担，让状态和下一步操作一眼可见。
 
-## Exact navigation contract
+保留现有功能、数据结构与四个底部入口。界面和文案都不使用口号、比喻或角色扮演式表达。
 
-- Root stack: `MainTabs`, `Rooms({ houseId })`, `RoomEditor({ roomId })`, `StoragePhoto({ photoId })`.
-- Five-tab shell, in exact order: `Home / 进度`, `Items / 物品`, `Boxes / 箱子`, `Search / 查找`, `Memory / 回忆`.
-- Detail screens keep the current system navigation behavior; do not introduce new top-level destinations or reorder the five tabs.
+## 导航
 
-## Exact target token quick reference
+- 底部入口固定为：`进度`、`物品`、`箱子`、`查找`。
+- 不新增入口，不改变页面关系。
+- 详情页继续使用现有返回和模态交互。
 
-- Main palette: `#176BDB`, `#2F80ED`, `#BFDFFF`, `#F3F9FF`, `#FFFFFF`.
-- Yellow: `#FFC928`, `#FFF3BD`; its visible area must remain below `10%` per page.
-- Ink and line: `#17243A`, `#53657D`, `#D8E8F7`.
-- Radius: page `24pt`, card `18pt`, control `14pt`, small label `10pt`.
-- Minimum touch target: `44×44pt`.
-- Lighting: unified top-left / 左上 light source, soft upper-edge highlight, short soft lower shadow.
-- Materials: smooth plastic, white ceramic, semi-matte rubber.
+## 视觉方向
 
-## Component and state rules
+- 蓝白、干净、明亮、具有轻微实体玩具感。
+- 玩具感来自清晰轮廓、有限层级、按压深度和模块化几何，不来自夸张圆角、卡通文案或装饰。
+- 页面信息密度适中；重要模块有明确体积，普通列表保持轻量。
+- 同一屏最多一个大面积蓝色主模块。
+- 避免每一项都做成悬浮卡片；相关内容应合并成列表或分组表面。
+- 不使用渐变、玻璃拟态、霓虹色、emoji、字符图标或装饰插画。
 
-- Interactive controls are raised; information containers are slightly raised; read-only states and input/search slots are inset.
-- Primary action uses blue plastic with a narrow top highlight and deep-blue lower thickness. Pressed state moves down `2pt` while the shadow shortens.
-- Yellow is reserved for the single key completion action or a small milestone highlight, never a broad background.
-- Cards use white ceramic or pale-blue plastic trays. Interactive/draggable cards receive clearer edging and elevation than informational cards.
-- Progress uses an inset toy rail or instrument slot, not a flat color bar.
-- Status tags resemble inset plastic nameplates. Default states remain blue/white; success, warning, danger, and deletion retain clear semantic colors plus text or icons.
-- Bottom navigation is a rounded white base; the selected destination looks like an illuminated blue physical button.
+## 颜色
 
-## Prohibited styles
+只使用以下颜色：
 
-Do not use kraft paper, old leather, yellowed photos, heavy wood grain, dirty texture, retro filters, Liquid Glass as the main material, joke-led or cold-humor copy, cartoon characters, celebrity likeness, direct Apple UI reproduction, or recording-hardware/audio-capture imagery as a visual motif.
+- 页面背景 `#F3F9FF`
+- 主表面 `#FFFFFF`
+- 次级表面 `#EAF4FF`
+- 主蓝 `#176BDB`
+- 亮蓝 `#2F80ED`
+- 浅蓝 `#BFDFFF`
+- 深色文字 `#17243A`
+- 次级文字 `#53657D`
+- 边线 `#D8E8F7`
+- 黄色强调 `#FFC928`，每屏可见面积不超过 8%，只用于提醒或里程碑
+- 危险色 `#A12F2F`
+- 成功状态使用主蓝，不新增绿色体系
 
-## Complete approved specification
+不引入紫色、粉色、青绿色或渐变。
 
-# Banjiatino 蓝白立体玩具风设计规范
+## 字体
 
-## 1. 设计目标
+- 只使用 iOS 系统无衬线字体。
+- 页面标题 28–32pt，`800`，表达页面名称，不写口号。
+- 模块标题 18–20pt，`700–800`。
+- 正文 14–16pt，常规字重，行高 20–22pt。
+- 标签与状态 11–13pt，`600–700`。
+- 数字可使用 `800–900`，但避免同屏出现多个超大数字。
+- 不使用衬线体、装饰字体或全大写英文眉题。
 
-将 Banjiatino 设计成一个明亮、轻松、具有真实触感的搬家与居住回忆 App。视觉需要保留约 15 年前消费软件中清晰、可触摸的拟物层次，但不复制具体 Apple 界面，也不使用陈旧、泛黄或低明度的怀旧表达。
+## 间距与形状
 
-本轮只定义品牌与 UI 视觉方向，不改变现有功能、导航结构和数据模型。
+- 设计尺寸：`390 x 844`，只输出 App 内容，不包含设备外框和系统状态栏。
+- 页面水平边距 20pt。
+- 间距基数 4pt；常用间距为 8、12、16、24、32。
+- 控件圆角 12–14pt；卡片圆角 16–20pt；页面级主模块可使用 24pt。
+- 胶囊形只用于真正的状态或筛选，不用于普通按钮和导航容器。
+- 触控区域至少 44x44pt。
 
-## 2. 品牌性格
+## 边框和阴影
 
-- 明亮、可靠、轻松
-- 像精致的成人收藏玩具，而不是儿童教育产品
-- 趣味来自形状、材质和动效，不依赖段子或冷幽默文案
-- 搬家代表行动与整理，旧居回忆代表温度与珍藏
+- 白色表面使用 1px `#D8E8F7` 边框。
+- 普通表面阴影：`0 4px 8px rgba(23,107,219,0.08)`。
+- 主按钮或被选中控件阴影：`0 5px 8px rgba(23,107,219,0.18)`。
+- 同一模块不能同时使用厚边框、强阴影和多层嵌套。
+- 列表优先使用分隔线，避免每一行都是独立卡片。
 
-## 3. 核心视觉概念
+## 首页信息结构
 
-### 会微笑的搬家箱
+首页标题只写“搬家进度”，不加眉题和描述。
 
-Logo 主体是一个圆润的蓝色搬家箱：
+顺序：
 
-- 白色箱盖形成简化的屋顶轮廓
-- 黄色封箱带形成克制的微笑弧线
-- 不使用人物、演员肖像或卡通五官
-- 在 32pt 尺寸下仍能辨认出“箱子、屋顶、微笑”三个特征
+1. 搬家日期与下一项任务。
+2. 搬运进度主模块：一个百分比、进度条、三个简短指标。
+3. 需要处理的异常，例如“3 类物品未装箱”。
+4. 旧家房间概览。
+5. 最近更新的箱子。
+6. 同步和家庭协作作为次要工具，不占用两个大卡片。
 
-App Icon 使用蓝色圆角背景、白色主体和一处黄色重点。避免细线、复杂文字和大面积渐变噪点。
+首屏必须让用户看到搬家日期/下一项任务和整体进度。
 
-## 4. 色彩系统
-
-### 主色
-
-- `Primary Blue 600`：`#176BDB`，主按钮、选中状态、核心图形
-- `Primary Blue 500`：`#2F80ED`，常规强调与图标
-- `Sky Blue 200`：`#BFDFFF`，次级面板与进度背景
-- `Ice Blue 50`：`#F3F9FF`，页面背景
-- `Pure White`：`#FFFFFF`，卡片与高光面
-
-### 重点色
-
-- `Signal Yellow 500`：`#FFC928`，主要完成状态、关键操作提示、Logo 微笑
-- `Signal Yellow 100`：`#FFF3BD`，轻量提示背景
-
-### 中性色
-
-- `Ink 900`：`#17243A`，主要文字
-- `Ink 600`：`#53657D`，次要文字
-- `Line Blue 100`：`#D8E8F7`，边界与分隔
-
-黄色占单个页面可见面积不超过 10%，不作为大面积背景。危险、错误和删除继续使用语义红色，不能用黄色替代。
-
-## 5. 材质与光照
-
-- 主要材质：光滑塑料、白色陶瓷、半哑光橡胶
-- 光源统一来自左上方，组件上沿有柔和高光，下方有短而柔软的阴影
-- 可操作组件浮起，信息容器轻微浮起，只读状态和输入槽向内凹陷
-- 禁止牛皮纸、旧皮革、泛黄照片、重木纹、脏污颗粒和复古滤镜
-- 玻璃材质只用于小面积高光，不把整体做成 Liquid Glass
-
-## 6. 形状与空间
-
-- 页面大圆角：24pt
-- 卡片圆角：18pt
-- 控件圆角：14pt
-- 小标签圆角：10pt
-- 最小触控区域：44×44pt
-- 页面保持充足白色与冰蓝留白，不堆叠过多装饰
-- 图标采用粗轮廓、圆角端点和立体双色填充
-
-## 7. 组件语言
+## 组件规范
 
 ### 主按钮
 
-蓝色塑料按键，顶部有窄高光，底部有深蓝厚度。按下时下移 2pt、阴影收短。黄色只用于当前流程中唯一的关键完成动作。
+- 主蓝背景、白色文字、14pt 圆角。
+- 标签使用直接动词，如“设置日期”“新增箱子”“保存”。
+- 按下时下移 2pt，并减弱阴影。
 
-### 卡片
+### 卡片与分组
 
-白色陶瓷或浅蓝塑料托盘。信息卡使用低浮起层级；可拖动或可进入详情的卡片使用更明显的边缘和阴影。
+- 独立的重要对象可以使用卡片。
+- 房间和箱子列表应使用共享表面与行分隔，减少重复外框。
+- 不允许卡片嵌套卡片。
 
 ### 进度
 
-使用玩具滑轨或嵌入式仪表槽表达，不使用纯平色条。已完成部分为蓝色，关键里程碑使用小面积黄色。
+- 保留蓝色主进度模块，但减少内部装饰和重复统计。
+- 只保留一个主要百分比和一条清晰进度条。
+- 不同时显示圆环、粗进度条和多个装饰托盘。
 
-### 状态标签
+### 状态
 
-像嵌入卡片的塑料铭牌。默认蓝白体系；成功、警告、危险保持明确语义色。
+- 状态标签保持小而清晰。
+- 成功或当前状态使用主蓝；需要处理的状态使用浅蓝或少量黄色。
+- 状态文案保持现有业务含义，不使用情绪化描述。
 
 ### 底部导航
 
-白色圆润底座，选中项像被按亮的蓝色实体按钮。保留现有五个入口：进度、物品、箱子、查找、回忆。
+- 四个入口固定不变。
+- 使用统一的线性图标，不使用 `⌂`、`◇`、`□`、`⌕` 等字符。
+- 当前入口可以使用蓝色实体底座，但尺寸紧凑、阴影克制。
+- 其他入口保持白底和次级文字色。
 
-## 8. 页面方向
+## 文案规范
 
-### 进度首页
+### 原则
 
-- 顶部展示当前搬家阶段和整体进度
-- 中部使用大型立体进度滑轨
-- 待办事项放入白色模块化托盘
-- 页面以蓝白为主，黄色只标记当前最重要的一步
-- 文案直接、友好，不加入冷幽默
+- 页面标题说明用户所在位置：`搬家进度`、`物品清单`、`箱子`、`查找物品`、`搬家任务`。
+- 按钮直接说明动作：`设置日期`、`新增物品`、`创建箱子`、`保存`、`删除`。
+- 状态直接说明事实：`未装箱`、`已装箱`、`运输中`、`已到达`、`已安置`。
+- 错误提示先说明问题，再给出下一步。
+- 能从标题、数据或控件看懂的信息不再重复解释。
 
-### 物品页
+### 禁止
 
-- 物品卡像排列整齐的小型收纳模块
-- 箱号、房间和状态有清晰层级
-- 批量操作与新增入口保持实体按钮反馈
+- 不使用“作战台”“一件不落地”“搬家节奏”“封箱之后也找得到”“东西到底在哪”等口号或对话式标题。
+- 不使用“还差一步”“先随便点点看”等模糊或拟人表达。
+- 不写“App 会告诉你……”这类解释产品自身的句子。
+- 不在同一模块重复标题含义。
 
-### 箱子页
+### 首页固定文案
 
-- 箱子不再表现为棕色纸箱，而是蓝白色模块化搬运箱
-- 每个箱子有大号编号、起点、终点和状态
-- 图片入口像相机模块嵌在卡片中
+- 页面标题：`搬家进度`
+- 日期未设置：`设置搬家日期`
+- 日期操作：`设置日期`
+- 导入操作：`导入任务`
+- 进度标题：`搬运进度`
+- 指标：`物品总数`、`已装箱`、`已安置`
+- 异常：`{n} 类物品未装箱`
+- 异常操作：`查看物品`
+- 房间标题：`旧家房间`
+- 房间操作：`管理`
+- 箱子标题：`最近更新`
+- 正常同步状态：`已同步`
+- 协作操作：`邀请家人`
 
-### 查找页
+## 图标
 
-- 搜索框是浅蓝内凹槽
-- 搜索结果沿用物品与箱子组件，不创造第三套卡片样式
+- 使用 Lucide 风格的统一线性图标。
+- 图标只用于导航和操作识别，不替代文字。
+- 不使用 emoji、ASCII 符号、自制品牌标记或装饰图形。
 
-### 回忆页
+## 动效
 
-- 房子与房间照片装入蓝白立体相框
-- 使用干净的相册托盘和时间标签，不使用泛黄照片或旧相册材质
-- 房屋平面图以浅蓝底、深蓝线和黄色当前点位呈现
+- 标准过渡 180ms。
+- 按压反馈：下移 2pt，阴影缩短。
+- 页面切换与列表更新保持克制，不使用弹跳或循环动画。
 
-## 9. 动效与反馈
+## 实现约束
 
-- 按钮按下：100–140ms，轻微缩短阴影并下移
-- 卡片进入：180–220ms，淡入并上移 6pt
-- 完成状态：进度滑轨平滑推进，黄色里程碑短暂发亮
-- 页面转场保持系统导航习惯，不加入夸张弹跳
-- 支持 Reduce Motion；关闭动效时状态变化仍清晰可见
-
-## 10. 可访问性
-
-- 正文与背景对比度至少满足 WCAG AA
-- 不只依靠颜色表达状态，必须同时使用文字或图标
-- 重要文字不叠加在复杂高光或纹理上
-- Dynamic Type 放大后允许卡片增高，不截断关键字段
-- 所有交互组件保持至少 44pt 触控尺寸
-
-## 11. Superdesign 交付范围
-
-第一轮画布包含：
-
-1. Logo 与 App Icon 主方案
-2. 色板、材质、阴影和基础控件样例
-3. 进度首页高保真设计
-4. 箱子列表高保真设计
-5. 回忆首页高保真设计
-6. 三个页面共用的底部导航与组件状态
-
-本轮不生成全部边缘状态、不改代码、不替换 Xcode App Icon。用户确认视觉稿后，再规划 React Native 落地和正式资产导出。
-
-## 12. 验收标准
-
-- 第一眼感受是明亮蓝白，而不是复古泛黄
-- 立体感明确，但不影响信息密度与可读性
-- 黄色只出现在重点位置
-- Logo 在小尺寸下仍可识别
-- 三个页面属于同一套组件和光照系统
-- 不出现冷幽默文案、儿童化卡通角色或具体 Apple 界面复刻
-
+- React Native Community CLI，不能引入 Expo。
+- 视觉需能通过现有 `StyleSheet`、React Navigation 和 iOS 系统字体实现。
+- 保持中文可读性和 Dynamic Type 兼容性。
+- 使用且仅使用本文件规定的字体、颜色、间距和组件风格，不引入其他视觉体系。

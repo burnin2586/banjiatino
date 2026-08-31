@@ -59,12 +59,12 @@ export function JoinProjectScreen({ token, onFinished }: { token: string; onFini
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <Screen>
-        <PageHeader title="加入家庭搬家" />
+        <PageHeader title="加入搬家项目" />
         <Card>
           {state.phase === 'joining' && (
             <View style={styles.center}>
               <ActivityIndicator color={AppColors.primary} size="large" />
-              <Text style={styles.body}>正在验证邀请…</Text>
+              <Text style={styles.body}>正在验证邀请</Text>
             </View>
           )}
 
@@ -86,7 +86,7 @@ export function JoinProjectScreen({ token, onFinished }: { token: string; onFini
 
           {state.phase === 'needName' && (
             <View>
-              <Text style={styles.body}>先告诉我怎么称呼你。</Text>
+              <Text style={styles.body}>你的称呼</Text>
               <TextInput
                 accessibilityLabel="你的称呼"
                 style={styles.input}
@@ -107,7 +107,7 @@ export function JoinProjectScreen({ token, onFinished }: { token: string; onFini
           {state.phase === 'joined' && (
             <View>
               <Text style={styles.body}>
-                已加入「{state.projectName}」，现在可以和家人一起整理了。
+                已加入「{state.projectName}」
               </Text>
               <PrimaryButton label="进入项目" onPress={enterProject} />
             </View>

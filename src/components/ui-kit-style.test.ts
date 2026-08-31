@@ -51,13 +51,14 @@ test('moves a pressed plastic control down two points', () => {
   expect(getPressDepth(true)).toEqual([{ translateY: 2 }]);
 });
 
-test('adds a visible check cue and exposes selected state to accessibility', () => {
+test('adds a line-icon check cue and exposes selected state to accessibility', () => {
   expect(getChoiceChipLabel('厨房', false)).toBe('厨房');
   expect(getChoiceChipLabel('厨房', true)).toBe('✓ 厨房');
 
   const chip = ChoiceChip({ label: '厨房', selected: true, onPress: jest.fn() });
   expect(chip.props.accessibilityState).toEqual({ selected: true });
-  expect(chip.props.children.props.children).toBe('✓ 厨房');
+  expect(chip.props.children[0].props.name).toBe('Check');
+  expect(chip.props.children[1].props.children).toBe('厨房');
 });
 
 test('shortens plastic shadows while primary and add controls are pressed', () => {

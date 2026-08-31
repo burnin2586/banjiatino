@@ -142,7 +142,7 @@ export function PhotoMarkerCanvas({ photo, boxes, mode, onMarkerCreate, onMarker
         </View>
       </View>
       <Text style={styles.hint}>
-        {mode === 'edit' ? '在照片上拖拽画一个框 = 新建箱子' : '点框看里面的物品'}
+        {mode === 'edit' ? '拖动框选箱子' : '选择标注查看物品'}
       </Text>
     </View>
   );

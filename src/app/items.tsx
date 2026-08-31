@@ -16,6 +16,7 @@ import {
   TextButton,
 } from '@/components/ui-kit';
 import { TemplatePicker } from '@/components/template-picker';
+import { AppIcon } from '@/components/app-icon';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import { formatBoxCode,
@@ -24,6 +25,7 @@ import { formatBoxCode,
   type ItemAction,
   type MovingItem,
 } from '@/types/moving';
+import { filterItems, type ItemListFilter } from './items-presentation';
 
 export default function ItemsScreen() {
   const {
@@ -45,11 +47,23 @@ export default function ItemsScreen() {
   const [boxId, setBoxId] = useState<string | null>(null);
   const [action, setAction] = useState<ItemAction>('带走');
   const [note, setNote] = useState('');
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<ItemListFilter>('all');
 
   const sortedItems = useMemo(
     () => [...state.items].sort((a, b) => b.updatedAt - a.updatedAt),
     [state.items],
   );
+  const visibleItems = useMemo(
+    () => filterItems(sortedItems, query, filter),
+    [filter, query, sortedItems],
+  );
+  const unboxedCount = sortedItems.filter(
+    (item) => item.action === '带走' && item.boxId === null,
+  ).length;
+  const packedCount = sortedItems.filter(
+    (item) => item.action === '带走' && item.boxId !== null && item.status !== '待整理',
+  ).length;
 
   function resetForm() {
     setEditingItemId(null);
@@ -86,7 +100,7 @@ export default function ItemsScreen() {
 
   function handleSubmit() {
     if (!name.trim()) {
-      Alert.alert('还差一步', '请先填写物品名称。');
+      Alert.alert('请输入物品名称');
       return;
     }
 
@@ -122,7 +136,7 @@ export default function ItemsScreen() {
           <LoadingScreen />
         ) : (
           <FlatList
-            data={sortedItems}
+            data={visibleItems}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.screenContent}
             keyboardShouldPersistTaps="handled"
@@ -130,22 +144,41 @@ export default function ItemsScreen() {
             ListHeaderComponent={
               <View style={styles.headerBlock}>
                 <PageHeader
-                  eyebrow="物品台账"
-                  title="每一件，都有去向"
-                  description="记录旧家位置和新家位置，填错了也可以随时修改。"
+                  title="物品清单"
                   action={<AddButton label="新增物品" onPress={openNewItem} />}
                 />
+                <View style={styles.searchBox}>
+                  <AppIcon color={AppColors.textMuted} name="Search" size={20} strokeWidth={2.2} />
+                  <TextInput
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    clearButtonMode="while-editing"
+                    placeholder="搜索物品"
+                    placeholderTextColor={AppColors.textMuted}
+                    style={styles.searchInput}
+                    value={query}
+                    onChangeText={setQuery}
+                  />
+                </View>
+                <ScrollView
+                  horizontal
+                  contentContainerStyle={styles.filterRow}
+                  showsHorizontalScrollIndicator={false}>
+                  <ChoiceChip label={`全部 ${sortedItems.length}`} selected={filter === 'all'} onPress={() => setFilter('all')} />
+                  <ChoiceChip label={`未装箱 ${unboxedCount}`} selected={filter === 'unboxed'} onPress={() => setFilter('unboxed')} />
+                  <ChoiceChip label={`已装箱 ${packedCount}`} selected={filter === 'packed'} onPress={() => setFilter('packed')} />
+                </ScrollView>
                 <View style={styles.headerActions}>
                   <TextButton label="从模板添加" onPress={() => setTemplateVisible(true)} />
                 </View>
-                <SectionTitle title="全部物品" detail={`${state.items.length} 类`} />
+                <SectionTitle title="全部物品" detail={`${visibleItems.length} 类`} />
               </View>
             }
             ListEmptyComponent={
               <EmptyState
-                icon="◇"
+                icon="Package"
                 title="还没有物品"
-                description="从一个抽屉开始，添加第一件需要搬走的东西。"
+                description="添加第一件物品。"
               />
             }
             ItemSeparatorComponent={() => <View style={styles.listGap} />}
@@ -162,7 +195,7 @@ export default function ItemsScreen() {
                   <View style={styles.itemTop}>
                     <View style={styles.itemIdentity}>
                       <View style={styles.itemIcon}>
-                        <Text style={styles.itemIconText}>◇</Text>
+                        <AppIcon color={AppColors.primary} name="Box" size={20} strokeWidth={2.2} />
                       </View>
                       <View style={styles.itemTitleWrap}>
                         <Text style={styles.itemName}>
@@ -189,17 +222,17 @@ export default function ItemsScreen() {
                   </View>
 
                   <View style={styles.destination}>
-                    <Text style={styles.destinationLabel}>搬家去向</Text>
+                    <Text style={styles.destinationLabel}>存放位置</Text>
                     <Text style={styles.destinationValue}>
                       {!isMoving
                         ? item.action
                         : box
                           ? `${formatBoxCode(box)} · ${destinationRoom?.name ?? '未设置目标房间'}`
-                          : '尚未分配箱子'}
+                          : '未装箱'}
                     </Text>
                     {isMoving ? (
                       <Text style={styles.destinationMeta}>
-                        具体位置：{item.destinationLocation || '待确定'}
+                        新家位置：{item.destinationLocation || '未设置'}
                       </Text>
                     ) : null}
                   </View>
@@ -208,7 +241,7 @@ export default function ItemsScreen() {
 
                   {isMoving && item.boxId ? (
                     <View style={styles.statusArea}>
-                      <Text style={styles.statusLabel}>调整状态</Text>
+                      <Text style={styles.statusLabel}>状态</Text>
                       <View style={styles.chipWrap}>
                         {ITEM_STATUSES.map((status) => (
                           <ChoiceChip
@@ -235,9 +268,9 @@ export default function ItemsScreen() {
 
       <ModalSheet
         visible={modalVisible}
-        title={editingItemId ? '编辑物品' : '添加物品'}
+        title={editingItemId ? '编辑物品' : '新增物品'}
         onClose={closeForm}>
-        <FormField label="物品名称 *">
+        <FormField label="物品名称">
           <TextInput
             autoFocus
             placeholder="例如：相机充电器"
@@ -269,7 +302,7 @@ export default function ItemsScreen() {
           </FormField>
         </View>
 
-        <FormField label="新家的具体位置">
+        <FormField label="新家位置">
           <TextInput
             placeholder="例如：卧室衣柜第二层"
             placeholderTextColor={AppColors.textMuted}
@@ -279,7 +312,7 @@ export default function ItemsScreen() {
           />
         </FormField>
 
-        <FormField label="怎么处理">
+        <FormField label="处理方式">
           <View style={styles.chipWrap}>
             {ITEM_ACTIONS.map((entry) => (
               <ChoiceChip
@@ -293,7 +326,7 @@ export default function ItemsScreen() {
         </FormField>
 
         {action === '带走' ? (
-          <FormField label="放入哪个箱子">
+          <FormField label="箱子">
             <ScrollView
               horizontal
               contentContainerStyle={styles.horizontalChips}
@@ -369,6 +402,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginTop: AppSpacing.sm,
+  },
+  searchBox: {
+    minHeight: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: AppSpacing.sm,
+    borderWidth: 1,
+    borderColor: AppColors.border,
+    borderRadius: AppRadius.md,
+    backgroundColor: AppColors.surface,
+    paddingHorizontal: AppSpacing.md,
+  },
+  searchInput: {
+    flex: 1,
+    minHeight: 48,
+    color: AppColors.text,
+    fontSize: 15,
+  },
+  filterRow: {
+    gap: AppSpacing.sm,
   },
   listGap: {
     height: AppSpacing.md,
