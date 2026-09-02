@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PhotoMarkerCanvas } from '@/components/storage/photo-marker-canvas';
+import { AppIcon } from '@/components/app-icon';
 import {
   ChoiceChip,
   LoadingScreen,
@@ -51,12 +52,12 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
   const [itemName, setItemName] = useState('');
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-  if (isLoading) return <LoadingScreen label="正在打开照片…" />;
+  if (isLoading) return <LoadingScreen label="正在加载照片" />;
 
   if (!photo) {
     return (
       <SafeAreaView style={styles.missing}>
-        <Text style={styles.missingTitle}>这张收纳照片不存在</Text>
+        <Text style={styles.missingTitle}>照片不存在</Text>
         <TextButton
           label="返回箱子页"
           onPress={() => navigation.replace('MainTabs', { screen: 'Boxes' })}
@@ -73,7 +74,7 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
     const sourceRoomId = lookups.sourceRooms[0]?.id;
     const destinationRoomId = lookups.destinationRooms[0]?.id;
     if (!sourceRoomId || !destinationRoomId) {
-      Alert.alert('还不能创建箱子', '请先在房间设置中添加旧家和新家的房间。');
+      Alert.alert('无法创建箱子', '请先添加旧家和新家房间。');
       return;
     }
     addBox({
@@ -156,10 +157,13 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
           accessibilityRole="button"
           onPress={() => navigation.goBack()}
           style={styles.headerControl}>
-          <Text style={styles.back}>‹ 返回</Text>
+          <View style={styles.backRow}>
+            <AppIcon color={AppColors.primary} name="ArrowLeft" size={20} strokeWidth={2.2} />
+            <Text style={styles.back}>返回</Text>
+          </View>
         </Pressable>
         <Text numberOfLines={2} style={styles.title}>
-          {currentPhoto.title || '收纳照片'}
+          收纳照片
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -231,7 +235,7 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
             <View style={styles.addItemRow}>
               <TextInput
                 style={styles.input}
-                placeholder="添加物品…"
+                placeholder="物品名称"
                 placeholderTextColor={AppColors.textMuted}
                 value={itemName}
                 onChangeText={setItemName}
@@ -242,7 +246,7 @@ export default function StoragePhotoScreen({ route, navigation }: Props) {
             </View>
 
             <View style={styles.destructiveActions}>
-              <TextButton label="从照片移除标注" tone="danger" onPress={confirmRemoveFromPhoto} />
+              <TextButton label="移除标注" tone="danger" onPress={confirmRemoveFromPhoto} />
               <TextButton label="删除箱子" tone="danger" onPress={confirmDeleteBox} />
             </View>
           </View>
@@ -293,7 +297,7 @@ function ItemEditor({
           hitSlop={6}
           style={styles.quantityButtonTarget}
           onPress={() => changeQuantity(item.quantity - 1)}>
-          <Text style={styles.quantityButton}>−</Text>
+          <AppIcon color={AppColors.primary} name="Minus" size={18} strokeWidth={2.4} />
         </Pressable>
         <Text style={styles.quantityValue}>{item.quantity}</Text>
         <Pressable
@@ -301,7 +305,7 @@ function ItemEditor({
           hitSlop={6}
           style={styles.quantityButtonTarget}
           onPress={() => changeQuantity(item.quantity + 1)}>
-          <Text style={styles.quantityButton}>＋</Text>
+          <AppIcon color={AppColors.primary} name="Plus" size={18} strokeWidth={2.4} />
         </Pressable>
       </View>
       <TextButton label="删" tone="danger" onPress={onDelete} />
@@ -421,6 +425,7 @@ const styles = StyleSheet.create({
     borderBottomColor: AppColors.border,
   },
   headerControl: { minWidth: 44, minHeight: 44, justifyContent: 'center' },
+  backRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   back: { color: AppColors.primary, fontSize: 16, fontWeight: '700' },
   title: { flex: 1, marginHorizontal: AppSpacing.md, color: AppColors.text, fontSize: 16, fontWeight: '800', textAlign: 'center' },
   danger: { color: AppColors.danger, fontSize: 15, fontWeight: '700' },

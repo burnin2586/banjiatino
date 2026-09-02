@@ -7,6 +7,7 @@ test('uses the approved Banjiatino palette', () => {
     primarySoft: '#BFDFFF',
     background: '#F3F9FF',
     surface: '#FFFFFF',
+    surfaceMuted: '#EAF4FF',
     accent: '#FFC928',
     accentSoft: '#FFF3BD',
     text: '#17243A',
@@ -20,6 +21,7 @@ test('defines continuous radii, soft shadows, and restrained motion', () => {
   expect(AppRadius).toMatchObject({ page: 24, card: 18, control: 14, label: 10 });
   expect(AppShadow.ceramic.shadowColor).toBe('#176BDB');
   expect(AppShadow.ceramic.shadowRadius).toBeGreaterThan(0);
+  expect(AppShadow.raised.shadowOpacity).toBe(0.18);
   expect(AppMotion.press).toBeGreaterThanOrEqual(100);
   expect(AppMotion.press).toBeLessThanOrEqual(140);
 });

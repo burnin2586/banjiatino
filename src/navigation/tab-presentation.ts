@@ -6,7 +6,7 @@ type TabRouteName = keyof MainTabParamList;
 
 type TabPresentation = {
   label: string;
-  glyph: string;
+  icon: 'ChartNoAxesColumnIncreasing' | 'ListChecks' | 'Package' | 'Search';
 };
 
 export const tabOrder = [
@@ -17,10 +17,10 @@ export const tabOrder = [
 ] as const satisfies readonly TabRouteName[];
 
 const tabPresentation: Record<TabRouteName, TabPresentation> = {
-  Home: { label: '进度', glyph: '⌂' },
-  Items: { label: '物品', glyph: '◇' },
-  Boxes: { label: '箱子', glyph: '□' },
-  Search: { label: '查找', glyph: '⌕' },
+  Home: { label: '进度', icon: 'ChartNoAxesColumnIncreasing' },
+  Items: { label: '物品', icon: 'ListChecks' },
+  Boxes: { label: '箱子', icon: 'Package' },
+  Search: { label: '查找', icon: 'Search' },
 };
 
 export function getTabPresentation(routeName: TabRouteName): TabPresentation {

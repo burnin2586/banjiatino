@@ -47,8 +47,8 @@ export default function TaskTimelineScreen() {
   return (
     <Screen>
       <View style={styles.headerRow}>
-        <TextButton label="← 返回" onPress={() => nav.goBack()} />
-        <Text style={styles.title}>搬家节奏</Text>
+        <TextButton label="返回" onPress={() => nav.goBack()} />
+        <Text style={styles.title}>搬家任务</Text>
         <TextButton
           label={movingDate ? '改日期' : '设置日期'}
           onPress={() => setPickingDate(true)}
@@ -61,9 +61,9 @@ export default function TaskTimelineScreen() {
       {state.tasks.length === 0 ? (
         <>
           <EmptyState
-            icon="📅"
+            icon="ListChecks"
             title="还没有任务"
-            description="从预设导入一套标准搬家任务，或自己加一条。"
+            description="导入预设或添加任务。"
           />
           <PrimaryButton label="导入预设任务" onPress={importTaskPresets} />
         </>
@@ -104,7 +104,7 @@ export default function TaskTimelineScreen() {
             );
           })}
 
-      <PrimaryButton label="+ 添加任务" onPress={() => setCreating(true)} />
+      <PrimaryButton label="添加任务" onPress={() => setCreating(true)} />
 
       <TaskEditSheet
         visible={creating || editing !== null}
@@ -193,7 +193,7 @@ function TaskEditSheet({
   }
 
   return (
-    <ModalSheet title={task ? '编辑任务' : '新建任务'} visible={visible} onClose={onClose}>
+    <ModalSheet title={task ? '编辑任务' : '添加任务'} visible={visible} onClose={onClose}>
       <Text style={styles.fieldLabel}>标题</Text>
       <TextInput
         value={title}
@@ -202,7 +202,7 @@ function TaskEditSheet({
         placeholderTextColor={AppColors.textMuted}
         style={styles.input}
       />
-      <Text style={styles.fieldLabel}>相对搬家日的天数（负=搬家前，0=当天，正=入住后）</Text>
+      <Text style={styles.fieldLabel}>距离搬家日（天）</Text>
       <TextInput
         value={offset}
         onChangeText={setOffset}
@@ -219,7 +219,7 @@ function TaskEditSheet({
         placeholderTextColor={AppColors.textMuted}
         style={styles.input}
       />
-      <PrimaryButton label="保存" onPress={save} />
+      <PrimaryButton label="保存任务" onPress={save} />
       {onDelete ? <TextButton label="删除任务" tone="danger" onPress={onDelete} /> : null}
     </ModalSheet>
   );

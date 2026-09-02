@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import {
   AppColors,
   AppRadius,
@@ -89,7 +90,7 @@ export function Screen({
   );
 }
 
-export function LoadingScreen({ label = '正在清点你的家…' }: { label?: string }) {
+export function LoadingScreen({ label = '正在加载' }: { label?: string }) {
   return (
     <View style={styles.loading}>
       <ActivityIndicator color={AppColors.primary} size="large" />
@@ -207,7 +208,7 @@ export function AddButton({ label, onPress }: { label: string; onPress: () => vo
           transform: getPressDepth(pressed),
         },
       ]}>
-      <Text style={styles.addButtonIcon}>＋</Text>
+      <AppIcon color={AppColors.white} name="Plus" size={24} strokeWidth={2.4} />
     </Pressable>
   );
 }
@@ -254,9 +255,8 @@ export function ChoiceChip({
         { backgroundColor: palette.background },
         pressed && styles.pressed,
       ]}>
-      <Text style={[styles.chipText, { color: palette.text }]}>
-        {getChoiceChipLabel(label, selected)}
-      </Text>
+      {selected ? <AppIcon color={palette.text} name="Check" size={15} strokeWidth={2.6} /> : null}
+      <Text style={[styles.chipText, { color: palette.text }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -266,13 +266,15 @@ export function EmptyState({
   title,
   description,
 }: {
-  icon: string;
+  icon: AppIconName;
   title: string;
   description: string;
 }) {
   return (
     <Card style={styles.emptyState}>
-      <Text style={styles.emptyIcon}>{icon}</Text>
+      <View style={styles.emptyIcon}>
+        <AppIcon color={AppColors.primary} name={icon} size={28} strokeWidth={2.1} />
+      </View>
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.emptyDescription}>{description}</Text>
     </Card>
@@ -449,12 +451,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...AppShadow.raised,
   },
-  addButtonIcon: {
-    color: AppColors.white,
-    fontSize: 28,
-    fontWeight: '400',
-    lineHeight: 31,
-  },
   pressed: {
     opacity: 0.72,
   },
@@ -477,6 +473,8 @@ const styles = StyleSheet.create({
     borderRadius: AppRadius.pill,
     backgroundColor: AppColors.surface,
     alignItems: 'center',
+    flexDirection: 'row',
+    gap: 5,
     justifyContent: 'center',
     paddingHorizontal: AppSpacing.md,
     paddingVertical: AppSpacing.sm,
@@ -496,7 +494,12 @@ const styles = StyleSheet.create({
     gap: AppSpacing.sm,
   },
   emptyIcon: {
-    fontSize: 34,
+    width: 52,
+    height: 52,
+    borderRadius: AppRadius.control,
+    backgroundColor: AppColors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyTitle: {
     alignSelf: 'stretch',

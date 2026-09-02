@@ -11,7 +11,6 @@ import {
   type PressableProps,
   StatusBar,
   StyleSheet,
-  Text,
   type View,
 } from 'react-native';
 import Config from 'react-native-config';
@@ -27,6 +26,7 @@ import { CollaborationOnboardingScreen } from '@/app/collaboration-onboarding';
 import { JoinProjectScreen } from '@/app/join-project';
 import { parseInvitationUrl } from '@/features/collaboration/invite-links';
 import { LoadingScreen } from '@/components/ui-kit';
+import { AppIcon, type AppIconName } from '@/components/app-icon';
 import { AppColors, AppRadius, AppShadow } from '@/constants/app-theme';
 import { MovingProvider } from '@/context/moving-context';
 import { SessionProvider, useSession } from '@/context/session-context';
@@ -88,9 +88,12 @@ function MainTabs() {
           tabBarLabelStyle: styles.tabBarLabel,
           tabBarLabel: presentation.label,
           tabBarIcon: ({ color }) => (
-            <Text style={[styles.tabIcon, { color }]}>
-              {presentation.glyph}
-            </Text>
+            <AppIcon
+              color={color}
+              name={presentation.icon as AppIconName}
+              size={20}
+              strokeWidth={2.3}
+            />
           ),
         };
       }}>
@@ -128,7 +131,7 @@ function RootGate() {
   const [inviteDismissed, setInviteDismissed] = useState(false);
 
   if (status === 'bootstrapping') {
-    return <LoadingScreen label="正在准备你的搬家项目…" />;
+    return <LoadingScreen label="正在加载项目" />;
   }
 
   if (invitationToken && !inviteDismissed) {
@@ -193,10 +196,5 @@ const styles = StyleSheet.create({
   tabBarLabel: {
     fontSize: 11,
     fontWeight: '700',
-  },
-  tabIcon: {
-    fontSize: 24,
-    fontWeight: '700',
-    lineHeight: 26,
   },
 });

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "Home": {
+      "targetKind": "existing-ui",
+      "projectId": "709a20d6-e9fa-482a-9090-7be568b21f4c",
+      "baselineDraftId": "a44cc94b-84c3-4a90-bd53-6eb126ebdf96",
+      "activeDraftId": "a44cc94b-84c3-4a90-bd53-6eb126ebdf96",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "App.tsx",
+        "src/app/index.tsx",
+        "src/components/ui-kit.tsx",
+        "src/constants/app-theme.ts",
+        "src/navigation/tab-presentation.ts"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06",
+        "App.tsx": "2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa",
+        "src/app/index.tsx": "8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187",
+        "src/components/ui-kit.tsx": "fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab",
+        "src/constants/app-theme.ts": "37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649",
+        "src/navigation/tab-presentation.ts": "efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"
+      },
+      "components": [
+        {
+          "name": "BottomNavigation",
+          "id": "c1f251b1-2309-4d34-b739-a276ce7de42c",
+          "sourcePath": "App.tsx"
+        }
+      ],
+      "drafts": {
+        "a44cc94b-84c3-4a90-bd53-6eb126ebdf96": {
+          "title": "Current Home Baseline",
+          "visualDirection": "refined blue-and-white tactile UI with concise copy",
+          "currentVersion": 2
+        },
+        "7f8bd4a5-dc2e-4c79-94b5-ef2a240c2ab2": {
+          "title": "Banjiatino 空间档案进度首页",
+          "visualDirection": "spatial archive and editorial proofing desk",
+          "parentDraftId": "a44cc94b-84c3-4a90-bd53-6eb126ebdf96",
+          "currentVersion": 1
+        },
+        "415fac4c-a80a-4caa-a0fe-566766a30b25": {
+          "title": "Banjiatino 建筑杂志式搬家进度首页",
+          "visualDirection": "architectural magazine contents page",
+          "parentDraftId": "a44cc94b-84c3-4a90-bd53-6eb126ebdf96",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-08-22T05:12:00Z"
+    },
+    "Items": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"fbc9fcc4-aeda-4931-9043-dc7bc28533af","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"fbc9fcc4-aeda-4931-9043-dc7bc28533af":{"title":"物品清单","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "Boxes": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"6eebb693-5895-4eda-9b75-1fdfbde57de1","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"6eebb693-5895-4eda-9b75-1fdfbde57de1":{"title":"箱子","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "Search": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"1106677b-a4db-4d21-9444-894fd09cc22b","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"1106677b-a4db-4d21-9444-894fd09cc22b":{"title":"查找物品","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "TaskTimeline": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"d34d596b-f5d1-455b-87a8-92bf99e83e7e","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"d34d596b-f5d1-455b-87a8-92bf99e83e7e":{"title":"搬家任务","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "StoragePhoto": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"cc61e540-f449-4d80-b7db-1c2983589a17","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"cc61e540-f449-4d80-b7db-1c2983589a17":{"title":"收纳照片","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "CollaborationOnboarding": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"a58ee210-cd83-4af2-8dba-c06ef894ac6b","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"a58ee210-cd83-4af2-8dba-c06ef894ac6b":{"title":"创建或加入搬家项目","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"},
+    "JoinProject": {"targetKind":"new-ui","projectId":"709a20d6-e9fa-482a-9090-7be568b21f4c","activeDraftId":"3475bd8c-7f6b-4def-9efa-743b4065cb85","sourceTarget":"Home","sourceDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","designSystemPath":".superdesign/design-system.md","contextFiles":[".superdesign/design-system.md","App.tsx","src/app/index.tsx","src/components/ui-kit.tsx","src/constants/app-theme.ts","src/navigation/tab-presentation.ts"],"fingerprints":{".superdesign/design-system.md":"2736d3a3f6e73137142586e80ab2f5fe0901f90cdbbffde4c6be975716eaac06","App.tsx":"2fd2223560b6d0f89aa0a40f414c8b6a0b3058708a20a383b459ec5a9ff670fa","src/app/index.tsx":"8137f2da25f4d15280de67643b4c4d9a17bcc0109e4a60bef23b33de0df65187","src/components/ui-kit.tsx":"fd4e0b8c8313835942772ab03f6da5b6769182dfdda5fca206f099302034a4ab","src/constants/app-theme.ts":"37bda323040d7223eb0062a199d0385db3897df4dac0680267c05086d9912649","src/navigation/tab-presentation.ts":"efaff0565303650db5c26fa3d8db93b37d73dec958f36a6c61eaf3cc3cae92bb"},"drafts":{"3475bd8c-7f6b-4def-9efa-743b4065cb85":{"title":"加入搬家项目","visualDirection":"refined blue-and-white tactile UI with concise copy","parentDraftId":"a44cc94b-84c3-4a90-bd53-6eb126ebdf96","currentVersion":1}},"updatedAt":"2026-08-22T05:20:00Z"}
+  }
+}

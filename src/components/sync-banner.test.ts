@@ -20,7 +20,8 @@ describe('getSyncBannerProps', () => {
       tone: 'failed',
       actionLabel: '重试',
     });
-    expect(props?.label).toContain('同步失败，点按重试');
+    expect(props?.label).toContain('同步失败');
+    expect(props?.label).not.toContain('点按重试');
     expect(props?.label).toContain('2 项待同步');
   });
 

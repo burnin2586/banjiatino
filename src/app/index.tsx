@@ -19,6 +19,7 @@ import { SyncBanner } from '@/components/sync-banner';
 import { RoomManager } from '@/components/room-manager';
 import { DateWheel } from '@/components/date-wheel';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
+import { AppIcon } from '@/components/app-icon';
 import { useMoving } from '@/context/moving-context';
 import { computeCountdown, computeSuggestedDate, nextPendingTask } from '@/logic/task-timeline';
 import type { RootStackParamList } from '@/navigation/types';
@@ -74,7 +75,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={AppColors.primary} size="large" />
-        <Text style={styles.loadingText}>正在清点你的家…</Text>
+        <Text style={styles.loadingText}>正在加载</Text>
       </View>
     );
   }
@@ -82,35 +83,27 @@ export default function HomeScreen() {
   return (
     <>
     <Screen>
-      <PageHeader
-        eyebrow="搬家作战台"
-        title="一件不落地搬走"
-        description="不用靠脑子记，让每件东西都有明确去向。"
-      />
-
-      <SyncBanner />
-      <InviteFamilyCard />
+      <PageHeader title="搬家进度" />
 
       {movingDate === null ? (
         <Card style={styles.countdownCard}>
           <View style={styles.countdownCopy}>
-            <Text style={styles.countdownTitle}>设置搬家日，开始倒计时</Text>
-            <Text style={styles.countdownDesc}>设个日子，App 会告诉你现在该做什么。</Text>
+            <Text style={styles.countdownTitle}>设置搬家日期</Text>
           </View>
           <View style={styles.countdownActions}>
-            <PrimaryButton compact label="设置搬家日" onPress={() => setPickingDate(true)} />
-            <TextButton label="一键导入任务" onPress={importTaskPresets} />
+            <PrimaryButton compact label="设置日期" onPress={() => setPickingDate(true)} />
+            <TextButton label="导入任务" onPress={importTaskPresets} />
           </View>
         </Card>
       ) : (
         <Pressable onPress={() => nav.navigate('TaskTimeline')}>
           <Card style={[styles.countdownCard, styles.countdownCardActive]}>
-            <Text style={styles.countdownEyebrow}>搬家节奏</Text>
+            <Text style={styles.countdownEyebrow}>搬家日期</Text>
             <Text style={styles.countdownBig}>{countdown?.label}</Text>
             <Text style={styles.countdownSub}>
               {nextTask
-                ? `下一个任务：${nextTask.title}（建议 ${formatSuggestedDate(nextSuggested)}）`
-                : '所有任务已完成 🎉'}
+                ? `下一项：${nextTask.title} · ${formatSuggestedDate(nextSuggested)}`
+                : '任务已完成'}
             </Text>
           </Card>
         </Pressable>
@@ -120,14 +113,12 @@ export default function HomeScreen() {
       state.boxes.some((box) => box.id.startsWith('box-00')) ? (
         <Card style={styles.demoCard}>
           <View style={styles.demoText}>
-            <Text style={styles.demoTitle}>这里放了一组示例数据</Text>
-            <Text style={styles.demoDescription}>
-              先随便点点看；准备正式记录时，可以一键清空箱子和物品。
-            </Text>
+            <Text style={styles.demoTitle}>示例数据</Text>
+            <Text style={styles.demoDescription}>开始记录前可清空示例箱子和物品。</Text>
           </View>
           <PrimaryButton
             compact
-            label="开始我的搬家"
+            label="清空示例"
             onPress={() =>
               Alert.alert('清空示例数据？', '箱子和物品会被清空，四个默认房间会保留。', [
                 { text: '取消', style: 'cancel' },
@@ -141,14 +132,8 @@ export default function HomeScreen() {
       <Card style={styles.heroCard}>
         <View style={styles.progressHeader}>
           <View style={styles.progressCopy}>
-            <Text style={styles.progressLabel}>到达新家进度</Text>
+            <Text style={styles.progressLabel}>搬运进度</Text>
             <Text style={styles.progressValue}>{summary.progress}%</Text>
-          </View>
-          <View style={styles.progressCircle}>
-            <Text style={styles.progressCircleValue}>
-              {summary.arrived}/{summary.total}
-            </Text>
-            <Text style={styles.progressCircleLabel}>已到达</Text>
           </View>
         </View>
         <View style={styles.progressTrack}>
@@ -156,9 +141,9 @@ export default function HomeScreen() {
         </View>
         <View style={styles.metricTray}>
           <View style={styles.metricRow}>
-            <Metric value={summary.total} label="计划带走" />
-            <Metric value={summary.packed} label="已经装箱" />
-            <Metric value={summary.settled} label="完成安置" />
+            <Metric value={summary.total} label="物品总数" />
+            <Metric value={summary.packed} label="已装箱" />
+            <Metric value={summary.settled} label="已安置" />
           </View>
         </View>
       </Card>
@@ -166,19 +151,22 @@ export default function HomeScreen() {
       {getHomeMilestone(summary.unboxed) ? (
         <Card style={styles.alertCard}>
           <View style={styles.alertIcon}>
-            <Text style={styles.alertEmoji}>!</Text>
+            <AppIcon color={AppColors.text} name="AlertCircle" size={22} strokeWidth={2.4} />
           </View>
           <View style={styles.alertText}>
-            <Text style={styles.alertTitle}>{summary.unboxed} 类物品还没有箱子</Text>
-            <Text style={styles.alertDescription}>去“物品”页继续整理，避免搬家时遗漏。</Text>
+            <Text style={styles.alertTitle}>{summary.unboxed} 类物品未装箱</Text>
+            <TextButton
+              label="查看物品"
+              onPress={() => nav.navigate('MainTabs', { screen: 'Items' })}
+            />
           </View>
         </Card>
       ) : null}
 
       <View>
         <View style={styles.sectionActions}>
-          <SectionTitle title="按旧家房间整理" detail={`${sourceRooms.length} 个区域`} />
-          <TextButton label="管理房间" onPress={() => setRoomManagerVisible(true)} />
+          <SectionTitle title="旧家房间" detail={`${sourceRooms.length} 个`} />
+          <TextButton label="管理" onPress={() => setRoomManagerVisible(true)} />
         </View>
         <View style={styles.roomGrid}>
           {sourceRooms.map((room) => {
@@ -202,7 +190,7 @@ export default function HomeScreen() {
       </View>
 
       <View>
-        <SectionTitle title="最近的箱子" detail="继续上次进度" />
+        <SectionTitle title="最近更新" />
         <View style={styles.listGap}>
           {state.boxes.slice(0, 3).map((box) => {
             const sourceRoom = lookups.roomById.get(box.sourceRoomId);
@@ -212,13 +200,13 @@ export default function HomeScreen() {
             return (
               <Card key={box.id} style={styles.boxRow}>
                 <View style={styles.boxIcon}>
-                  <Text style={styles.boxEmoji}>□</Text>
+                  <AppIcon color={AppColors.primary} name="Package" size={22} strokeWidth={2.2} />
                 </View>
                 <View style={styles.boxText}>
                   <Text style={styles.boxCode}>{formatBoxCode(box)}</Text>
                   <Text style={styles.boxName}>{box.name}</Text>
                   <Text style={styles.boxMeta}>
-                    {sourceRoom?.name ?? '未分区'} → {destinationRoom?.name ?? '未设置'} ·{' '}
+                    {sourceRoom?.name ?? '未分区'} 至 {destinationRoom?.name ?? '未设置'} ·{' '}
                     {itemCount} 类
                   </Text>
                 </View>
@@ -230,6 +218,11 @@ export default function HomeScreen() {
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.tools}>
+        <SyncBanner />
+        <InviteFamilyCard />
       </View>
     </Screen>
     <ModalSheet title="设置搬家日" visible={pickingDate} onClose={() => setPickingDate(false)}>
@@ -484,6 +477,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   listGap: {
+    gap: AppSpacing.md,
+  },
+  tools: {
     gap: AppSpacing.md,
   },
   boxRow: {

@@ -18,6 +18,7 @@ import {
   StatusBadge,
   TextButton,
 } from '@/components/ui-kit';
+import { AppIcon } from '@/components/app-icon';
 import { AppColors, AppRadius, AppSpacing } from '@/constants/app-theme';
 import { useMoving } from '@/context/moving-context';
 import { saveStoragePhoto } from '@/logic/photo-store';
@@ -90,11 +91,11 @@ export default function BoxesScreen() {
 
   function handleSubmit() {
     if (!name.trim()) {
-      Alert.alert('还差一步', '请给箱子起一个容易识别的名字。');
+      Alert.alert('请输入箱子名称');
       return;
     }
     if (!sourceRoomId || !destinationRoomId) {
-      Alert.alert('还差一步', '请选择来源房间和新家的目标房间。');
+      Alert.alert('请选择旧家和新家房间');
       return;
     }
 
@@ -178,9 +179,7 @@ export default function BoxesScreen() {
     <>
       <Screen>
         <PageHeader
-          eyebrow="箱子追踪"
-          title="封箱之后，也找得到"
-          description="每个箱子都有来源、目标房间和可回退的搬运状态。"
+          title="箱子"
           action={<AddButton label="新增箱子" onPress={openNewBox} />}
         />
 
@@ -196,8 +195,8 @@ export default function BoxesScreen() {
               disabled={isSavingPhoto}
               style={[styles.addPhotoCard, isSavingPhoto && styles.photoCardDisabled]}
               onPress={choosePhotoSource}>
-              <Text style={styles.addPlus}>＋</Text>
-              <Text style={styles.addLabel}>{isSavingPhoto ? '保存中…' : '拍照收纳'}</Text>
+              <AppIcon color={AppColors.primary} name="ImagePlus" size={24} strokeWidth={2.2} />
+              <Text style={styles.addLabel}>{isSavingPhoto ? '保存中' : '添加照片'}</Text>
             </Pressable>
             {state.storagePhotos.map((photo) => (
               <Pressable
@@ -216,9 +215,9 @@ export default function BoxesScreen() {
           <SectionTitle title="全部箱子" detail={`${state.boxes.length} 箱`} />
           {sortedBoxes.length === 0 ? (
             <EmptyState
-              icon="□"
+              icon="Package"
               title="还没有箱子"
-              description="创建第一只箱子，我们会自动生成连续箱号。"
+              description="创建第一个箱子。"
             />
           ) : (
             <View style={styles.list}>
@@ -253,7 +252,7 @@ export default function BoxesScreen() {
                         <Text style={styles.routeLabel}>从</Text>
                         <Text style={styles.routeValue}>{sourceRoom?.name ?? '未设置'}</Text>
                       </View>
-                      <Text style={styles.routeArrow}>→</Text>
+                      <AppIcon color={AppColors.primary} name="ArrowRight" size={18} strokeWidth={2.2} />
                       <View style={styles.routeStop}>
                         <Text style={styles.routeLabel}>搬到</Text>
                         <Text style={styles.routeValue}>{destinationRoom?.name ?? '未设置'}</Text>
@@ -284,7 +283,7 @@ export default function BoxesScreen() {
                     {box.note ? <Text style={styles.note}>备注：{box.note}</Text> : null}
 
                     <View style={styles.statusArea}>
-                      <Text style={styles.statusLabel}>调整箱子状态</Text>
+                      <Text style={styles.statusLabel}>状态</Text>
                       <View style={styles.chipWrap}>
                         {BOX_STATUSES.map((status) => (
                           <ChoiceChip
@@ -319,7 +318,7 @@ export default function BoxesScreen() {
         title={editingBoxId ? '编辑箱子' : '创建箱子'}
         onClose={closeForm}>
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>箱子名称 *</Text>
+          <Text style={styles.fieldLabel}>箱子名称</Text>
           <TextInput
             autoFocus
             placeholder="例如：桌面电子设备"
@@ -332,7 +331,7 @@ export default function BoxesScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>从哪个房间搬出</Text>
+          <Text style={styles.fieldLabel}>旧家房间</Text>
           <View style={styles.chipWrap}>
             {sourceRooms.map((room) => (
               <ChoiceChip
@@ -346,7 +345,7 @@ export default function BoxesScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>搬到新家的哪个房间</Text>
+          <Text style={styles.fieldLabel}>新家房间</Text>
           <View style={styles.chipWrap}>
             {destinationRooms.map((room) => (
               <ChoiceChip
