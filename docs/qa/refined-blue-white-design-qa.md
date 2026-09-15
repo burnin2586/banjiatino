@@ -3,7 +3,7 @@
 - 日期：2026-08-31
 - 设计源：Superdesign 项目 `709a20d6-e9fa-482a-9090-7be568b21f4c`
 - 设计稿：首页 `a44cc94b-84c3-4a90-bd53-6eb126ebdf96`、物品 `fbc9fcc4-aeda-4931-9043-dc7bc28533af`、箱子 `6eebb693-5895-4eda-9b75-1fdfbde57de1`、搜索 `1106677b-a4db-4d21-9444-894fd09cc22b`、任务 `d34d596b-f5d1-455b-87a8-92bf99e83e7e`、收纳照片 `cc61e540-f449-4d80-b7db-1c2983589a17`、协作 `a58ee210-cd83-4af2-8dba-c06ef894ac6b`、加入项目 `3475bd8c-7f6b-4def-9efa-743b4065cb85`
-- 设计系统：`.superdesign/design-system.md`
+- 设计系统：`../../.superdesign/design-system.md`
 - 目标视口：390 × 844 pt，浅色模式
 - 设计稿尺寸：390 × 844 CSS px，1×
 - 实现截图：已采集。iPhone 17（iOS 26.3，402 × 874 pt @3x）Debug 构建，`/tmp/banjiatino-ui/`（00 onboarding、16/18/29/30 首页、23 物品、25 箱子、26 查找、27 管理房间）。与设计稿视口相差 12 pt 宽度，未做逐像素对齐。
@@ -80,7 +80,7 @@
 
 - 全屏比较：已完成 7 个状态（onboarding、首页×3 屏、物品、箱子、查找、管理房间弹窗），截图在 `/tmp/banjiatino-ui/`。
 - 局部比较：顶部标题、进度主模块、筛选 chips、状态徽章、箱卡 route 区、空状态均已对照；差异逐条记入 Findings。
-- 旧版 `design-qa/` 截图对应 2026-08-12 三页面版本，本轮未再引用。
+- 旧版 `refined-blue-white-screens/` 截图对应 2026-08-12 三页面版本，本轮未再引用。
 
 ## Primary Interaction Checks（本轮已执行）
 
